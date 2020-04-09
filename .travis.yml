@@ -1,0 +1,20 @@
+language: java
+dist: xenial
+before_install: "./.travis.before_install.sh"
+install:
+- curl -sL -o ${HADOLINT} "https://github.com/hadolint/hadolint/releases/download/v1.16.0/hadolint-$(uname
+  -s)-$(uname -m)" && chmod 700 ${HADOLINT}
+deploy:
+  provider: script
+  script: "${HADOLINT} Dockerfile && mvn deploy"
+  skip_cleanup: true
+  on:
+    all_branches: true
+env:
+  global:
+  - HADOLINT: "${HOME}/hadolint"
+  - secure: gyZBpPY5CDlLzh50cpketi5z+aNfn120EAPLQw36DoPRR4k0KZ7mHrZIQrRhgygH/tLuxL922MNtEJWk0BjsQqw4Jhe8pkVwAMjeCVkdnyRY/UyIylKGiSL8jAtB8FnORQ8//6iTl1xL4yoQT2JXtd2ohgsk3hGPrNYmsRrWvz3VlNNYCPWfMZ3YGdg6ORTrRX5Wh3Uj2mDfF/E2q970InHVVc8rktBv478LvTJEuoJJ9zQisZ0ySeQATWb6dL8Btx0NlmMXcLIb/hnHnrbRKH2ABHqb93DbMR4wrXOK3XUwXB5zZHoVDuKHgMolCDKEsOZIU+cKvW/A6Qu36xj/nT9QeQTmW8+cVVD88BUFK+SfVMngZ1HBaf27ap3L11/fh/sdRKx0bRAw+JV7EKoRhHoD6upVeEkLSJBEpm5UEGsS/lc4w0qguTKp2z8BkH9SmwMf+bRkfzfSUDElgbx9Fl0LdEq+ohig/h/8s1Y3+X8MP3EpgTqzclBIlAoSTq6O5+4Y3ECg5mBKkBRuuI7hhKpmPl7r+l2jM1/MhnWFYUfejEHVx8v22Cv2duTKfK8OoLTpGUmIDyjySw+XsOumooSAVJ4oc22cJ+Bs0+T/7l+qkmRExVLJlIFW1Bz452C06J3XuhhOH77+HIKXuZlYWNE1aZC2dEq1ozwvXrGFh3M=
+  - secure: V8749cofdPeHRKncP84c9j32jFW3zZeIkChH6PD3G05SzPIq1UeVyNQlGhIuih/DLB8eKr9ZkEQ1Y0O/ZqReVOfVuzxbb/Bves9jh2lSQbzUs7s5EHDvnurF/pTAlp0c8m3GLq7tEx5NW2gfNs5pfEr8FZMoq5h2U7JANkuAnBspIKtvmTggFKNgQB3lv/1dMZSrUck9saY+awpHzSPQBYbfJLhPjkrJSsYiuwtLJpVSWtOsU1NL44SW6gJG31LKXwfHS6+MVCFsE6mtZ1lJBCwoJoY9+f0hMb2+UsXADf+WdZtHoVY2DE2dMkulHU9BVEaYgeZsdjB02/OEZFGRUmWss9JsvLg7ovbVSy6c/5JysEF8V5Hu7lxjWo4028hISMJaDLdv92qvmNCx3dd1rcaqT8RuL/gJLSQStvCTWJqBeTIl94tSOlp9JMrP5Bj8Z3YucuqomOMdbiCrV+WVET0Gbpdrm/CGdQ11prlkAkJDd6/zM7Xu6E7F3bPDS3SpC3eSaXWzlojckXwYSoeWqOQUKCiGOintXBF+1HG/uuzTPNfQoYLLeotx6hUoHWOtuwA5lDW6S0EhR3vMjVAKgWnGjmhFfHurgiH3QdmBAXQeOvkKu62T1cVdSpsTxZNPC0SCeyoMpNx07twR5U4KjJksi9eGlhVsmqJh6qhYLrc=
+notifications:
+  slack:
+    secure: w2qao9AJmUef4N9ahyfc/ZRp7oGOo2SYw+EsL//uCx6l4Wlxm2a9HuNqoFelsM5bn0fkyAFyZvlPNMP8xn5yGno7JgcXgb3hbNkNr9O/hX26tBFaA0uLU4497ViwqDr4l3+OhaFiwzO1XOIu4FYriPxeO7Qb/d5HZsBMBZhctKxMOeDyZmKknqdksl1Y5HT4sU2H0GzTgxTLymmnXKJwKX4ceUqiMvkaFoA5gkOoIFPTx4Xhaa9rxjW5LIEMHvISBM53T/x5Kc8LnNhxGUqAaxyYgLuu3DMVHYQCqIEYhTADzjVo2Kx/LfbiIqiANxEe0t4uOkGf1nuYWktb9BrsRcGn+/mlcIfz4Ro5hNO5yAyH2dlX/7pzz92HBDEo6Hlvi0KYKDmK/qhxP0DXjuymhiU4sH9nKdJQhYq9hpfawBze2UK5Cg2fnuI/LJFY8bYm3KQUkQV4+Z3dcb0togu8bIluvG9eAEWk9XwHZFRZRNfDVv7a1leEE6TC4ZB2TvHMW8S1lc2JUIl0/qY7ZzkZnAqVQPVJhAApktplJozVStj+JTjW2kNFbrT9RF4Ncyg+WWDgsHbFgYZLk2arl10mfDfbb1gN/s78N+5n8D/x8cBwgUshQak4gpgqMQE/eMto2pQvULHIIQqAM51JR/K/CsR7Gk/0h7UNmK1dRXsd950=
