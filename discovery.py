@@ -23,8 +23,6 @@ def publish(url, status):
 def readJson(jsonPath):
     """
     JSON reader.
-
-    DONE
     """
     with open(jsonPath, 'r') as f:
         dic = json.load(f)
@@ -33,8 +31,6 @@ def readJson(jsonPath):
 def readCSV(path):
     """
     CSV reader.
-
-    DONE
     """
     lines = []
     with open(path, 'r') as csvFile:
@@ -46,8 +42,6 @@ def readCSV(path):
 def filterCSV(lines):
     """
     Filters the correct information from the runtime CSV files.
-
-    DONE
     """
     filteredLines = []
     for i in lines:
@@ -58,15 +52,12 @@ def filterCSV(lines):
 def checkNvidiaContainerRuntime():
     """
     Checks if nvidia container runtime is installed.
-
-    DONE
     """
     return True if which('nvidia-container-runtime') is not None else False
 
 def checkCuda():
     """
     Checks if CUDA is installed and returns the version.
-
     """
     version = which('nvcc')
     if version is not None:
@@ -79,8 +70,6 @@ def checkCuda():
 def dockerVersion():
     """
     Checks if the Docker Engine version and the Docker API version are enough to run --gpus.
-
-    DONE
     """
     version = docker.from_env().version()
     for i in version['Components']:
@@ -93,6 +82,9 @@ def dockerVersion():
 
 
 def searchRuntime(runtimePath, hostFilesPath):
+    """
+    Checks if Nvidia Runtime exists, and reads its files.
+    """
     if checkNvidiaContainerRuntime():
         # Able to be accessed through --gpus.
         if 'daemon.json' in os.listdir(runtimePath):
@@ -107,8 +99,6 @@ def searchRuntime(runtimePath, hostFilesPath):
 def readRuntimeFiles(path):
     """
     Checks if the runtime files exist, reads them, and filters the correct information.
-
-    DONE
     """
     if os.path.isdir(path) and len(os.listdir(path)) > 0:
         allLines = []
@@ -129,7 +119,6 @@ def flow(runtime, hostFilesPath):
 
 
 if __name__ == "__main__":
-    
     API_URL = 'test'
     HOST_FILES = '/etc/nvidia-container-runtime/host-files-for-container.d/'
     RUNTIME_PATH = '/etc/docker/'
