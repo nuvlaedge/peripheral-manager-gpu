@@ -120,6 +120,7 @@ def flow(runtime, hostFilesPath):
 
 
 if __name__ == "__main__":
+
     API_URL = 'test'
     HOST_FILES = '/etc/nvidia-container-runtime/host-files-for-container.d/'
     RUNTIME_PATH = '/etc/docker/'
