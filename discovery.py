@@ -114,7 +114,8 @@ def flow(runtime, hostFilesPath):
             runtimeFiles = searchRuntime(runtime, hostFilesPath)
         else:
             runtimeFiles = searchRuntime(runtime, hostFilesPath)
-
+    else:
+        runtimeFiles = {}
     return {'runtimeFiles': runtimeFiles}
 
 
