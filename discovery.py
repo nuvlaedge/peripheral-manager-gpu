@@ -19,7 +19,6 @@ def publish(url, status):
 
     print(x.text)
 
-
 def readJson(jsonPath):
     """
     JSON reader.
@@ -80,7 +79,6 @@ def dockerVersion():
                 return True
     return False
 
-
 def searchRuntime(runtimePath, hostFilesPath):
     """
     Checks if Nvidia Runtime exists, and reads its files.
@@ -117,7 +115,6 @@ def flow(runtime, hostFilesPath):
     else:
         runtimeFiles = {}
     return {'runtimeFiles': runtimeFiles}
-
 
 if __name__ == "__main__":
     API_URL = 'test'
