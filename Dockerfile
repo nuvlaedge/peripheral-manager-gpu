@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM python:3-alpine
 
 COPY requirements.txt .
 RUN apt update && apt install python3 python3-pip -y
