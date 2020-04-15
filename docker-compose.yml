@@ -1,0 +1,14 @@
+version: "3.7"
+
+services:
+  peripheral-manager-gpu:
+    build: .
+    restart: on-failure
+    volumes:
+      - /etc/:/etc/
+    environment:
+      - NUVLA_ENDPOINT=${NUVLA_ENDPOINT:-nuvla.io}
+      - NUVLA_ENDPOINT_INSECURE=${NUVLA_ENDPOINT_INSECURE:-False}
+    labels:
+      - nuvlabox.component=True
+      - nuvlabox.deployment=production

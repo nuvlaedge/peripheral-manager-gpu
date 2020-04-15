@@ -1,4 +1,16 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+
+# -*- coding: utf-8 -*-
+
+"""NuvlaBox Peripheral GPU Manager
+
+This service provides GPU discovery of a NuvlaBox.
+
+It provides:
+    - Nvidia Docker Runtime discovery
+    - provides the correct devices and libraries needed to use a GPU.
+    - checks if Docker is the correct version to use --gpus.
+"""
 
 import os
 import csv
