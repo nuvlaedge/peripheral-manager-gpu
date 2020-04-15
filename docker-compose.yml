@@ -5,10 +5,7 @@ services:
     build: .
     restart: on-failure
     volumes:
-      - /etc/:/etc/
-    environment:
-      - NUVLA_ENDPOINT=${NUVLA_ENDPOINT:-nuvla.io}
-      - NUVLA_ENDPOINT_INSECURE=${NUVLA_ENDPOINT_INSECURE:-False}
+      - /etc/:/etc/:ro
     labels:
       - nuvlabox.component=True
       - nuvlabox.deployment=production
