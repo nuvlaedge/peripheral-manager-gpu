@@ -35,15 +35,29 @@ def init_logger():
     root.addHandler(handler)
 
 
+def wait_bootstrap():
+    """ Simply waits for the NuvlaBox to finish bootstrapping, by pinging the Agent API
+    :returns
+    """
+
+    logging.info("Checking if NuvlaBox has been initialized...")
+
+    healthcheck_endpoint = "http://agent/api/healthcheck"
+
+    r = requests.get(healthcheck_endpoint)
+    while not r.ok:
+        time.sleep(5)
+        r = requests.get(healthcheck_endpoint)
+
+    return
+
 def publish(url, assets):
     """
     API publishing function.
-
-    TODO: Change url, test with Nuvla.
     """
     x = requests.post(url, data = assets)
 
-    print(x.text)
+    return x.json()
 
 def readJson(jsonPath):
     """
@@ -145,11 +159,19 @@ def flow(runtime, hostFilesPath):
         runtimeFiles = {}
     return {'additional-assets': runtimeFiles}
 
-def send(url, flow):
-    publish(url, flow)
+def send(url, assets):
+    if assets.keys() != None:
+        logging.info("Sending GPU information to Nuvla")
+        publish(url, assets)
+    else:
+        logging.info("No GPU present...")
+        publish(url, assets)
+
 
 if __name__ == "__main__":
+    
     init_logger()
+    wait_bootstrap()
     
     API_URL = "http://agent/api/peripheral"
     HOST_FILES = '/etc/nvidia-container-runtime/host-files-for-container.d/'
