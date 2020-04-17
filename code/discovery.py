@@ -94,11 +94,6 @@ def filterCSV(lines):
 
     return filteredLines
 
-def checkNvidiaContainerRuntime():
-    """
-    Checks if nvidia container runtime is installed.
-    """
-    return True if which('nvidia-container-runtime') is not None else False
 
 def checkCuda():
     """
@@ -129,15 +124,19 @@ def searchRuntime(runtimePath, hostFilesPath):
     """
     Checks if Nvidia Runtime exists, and reads its files.
     """
-    if checkNvidiaContainerRuntime():
-        # Able to be accessed through --gpus.
-        if 'daemon.json' in os.listdir(runtimePath):
-            dic = readJson(runtimePath + 'daemon.json')
-            if 'nvidia' in  dic['runtimes'].keys():
-                a = readRuntimeFiles(hostFilesPath)
-                return {'path': dic['runtimes']['nvidia']['path'], 'files' : a}
-            else:
-                return None
+        
+    if 'daemon.json' in os.listdir(runtimePath):
+        
+        dic = readJson(runtimePath + 'daemon.json')
+        
+        if 'nvidia' in  dic['runtimes'].keys():
+        
+            a = readRuntimeFiles(hostFilesPath)
+            return {'path': dic['runtimes']['nvidia']['path'], 'files' : a}
+        
+        else:
+            return None
+    
     return None
 
 def readRuntimeFiles(path):
