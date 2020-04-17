@@ -187,7 +187,7 @@ if __name__ == "__main__":
 
     init_logger()
 
-    # wait_bootstrap()
+    wait_bootstrap()
 
     API_URL = "http://agent/api/peripheral"
     HOST_FILES = '/etc/nvidia-container-runtime/host-files-for-container.d/'

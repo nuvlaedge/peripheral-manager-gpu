@@ -25,3 +25,5 @@ services:
       - NUVLA_ENDPOINT_INSECURE=${NUVLA_ENDPOINT_INSECURE:-False}
     volumes:
       - /etc:/etc:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - nuvlabox-db:/srv/nuvlabox/shared
