@@ -183,6 +183,7 @@ def send(url, assets):
 if __name__ == "__main__":
     
     init_logger()
+    logging.info('Starting...')
     # wait_bootstrap()
     
     API_URL = "http://agent/api/peripheral"
