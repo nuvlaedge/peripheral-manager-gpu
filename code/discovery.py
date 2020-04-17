@@ -59,7 +59,7 @@ def publish(url, assets):
     API publishing function.
     """
     logging.debug(url)
-    x = requests.post(url, data = assets)
+    x = requests.post(url, json = assets)
 
     return x.json()
 
