@@ -88,9 +88,9 @@ def filterCSV(lines):
     filteredLines = {'devices': [], 'libraries': []}
     for i in lines:
         if i[0] == 'lib' :
-            filteredLines['libraries'].append(i.strip())
+            filteredLines['libraries'].append(i[1].strip())
         elif i[0] == 'dev':
-            filteredLines['devices'].append(i.strip())
+            filteredLines['devices'].append(i[1].strip())
 
     return filteredLines
 
@@ -159,15 +159,15 @@ def flow(runtime, hostFilesPath):
         if dockerVersion():
 
             logging.info('--gpus is available...')
-            runtimeFiles = searchRuntime(runtime, hostFilesPath)
+            runtimeFiles = runtime
 
         else:
 
             logging.info('--gpus is not available, but GPU usage is available')
-            runtimeFiles = searchRuntime(runtime, hostFilesPath)
+            runtimeFiles = runtime
     else:
         # GPU is not present or not able to be used.
-        
+
         logging.info('No viable GPU available.')
         runtimeFiles = {}
 
