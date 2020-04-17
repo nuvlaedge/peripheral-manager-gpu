@@ -184,12 +184,13 @@ if __name__ == "__main__":
     
     init_logger()
 
-    print('logging')
     # wait_bootstrap()
     
     API_URL = "http://agent/api/peripheral"
     HOST_FILES = '/etc/nvidia-container-runtime/host-files-for-container.d/'
     RUNTIME_PATH = '/etc/docker/'
+
+    logging.info('Testing Logging')
 
     e = Event()
     
