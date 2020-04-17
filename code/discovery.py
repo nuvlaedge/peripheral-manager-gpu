@@ -21,6 +21,8 @@ import subprocess
 import requests
 import docker
 import logging
+from threading import Event
+import time
 
 def init_logger():
     """ Initializes logging """
@@ -49,6 +51,7 @@ def wait_bootstrap():
         time.sleep(5)
         r = requests.get(healthcheck_endpoint)
 
+    logging.info('NuvlaBox has been initialized.')
     return
 
 def publish(url, assets):
@@ -151,12 +154,21 @@ def readRuntimeFiles(path):
 
 def flow(runtime, hostFilesPath):
     if checkNvidiaContainerRuntime():
+        
         if dockerVersion():
+
+            logging.info('--gpus is available...')
             runtimeFiles = searchRuntime(runtime, hostFilesPath)
+        
         else:
+
+            logging.info('--gpus is not available, but GPU usage is available')
             runtimeFiles = searchRuntime(runtime, hostFilesPath)
     else:
+
+        logging.info('No viable GPU available.')
         runtimeFiles = {}
+
     return {'additional-assets': runtimeFiles}
 
 def send(url, assets):
@@ -176,4 +188,9 @@ if __name__ == "__main__":
     API_URL = "http://agent/api/peripheral"
     HOST_FILES = '/etc/nvidia-container-runtime/host-files-for-container.d/'
     RUNTIME_PATH = '/etc/docker/'
-    send(API_URL, flow(RUNTIME_PATH, HOST_FILES))
+
+    e = Event()
+    
+    while True:
+        send(API_URL, flow(RUNTIME_PATH, HOST_FILES))
+        e.wait(timeout=90)
