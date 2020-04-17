@@ -124,19 +124,19 @@ def searchRuntime(runtimePath, hostFilesPath):
     """
     Checks if Nvidia Runtime exists, and reads its files.
     """
-        
+
     if 'daemon.json' in os.listdir(runtimePath):
-        
+
         dic = readJson(runtimePath + 'daemon.json')
-        
+
         if 'nvidia' in  dic['runtimes'].keys():
-        
+
             a = readRuntimeFiles(hostFilesPath)
             return {'path': dic['runtimes']['nvidia']['path'], 'files' : a}
-        
+
         else:
             return None
-    
+
     return None
 
 def readRuntimeFiles(path):
@@ -152,19 +152,22 @@ def readRuntimeFiles(path):
     return None
 
 def flow(runtime, hostFilesPath):
-    if checkNvidiaContainerRuntime():
-        
+    runtime = searchRuntime(runtime, hostFilesPath)
+    if runtime is not None:
+        # GPU is present and able to be used
+
         if dockerVersion():
 
             logging.info('--gpus is available...')
             runtimeFiles = searchRuntime(runtime, hostFilesPath)
-        
+
         else:
 
             logging.info('--gpus is not available, but GPU usage is available')
             runtimeFiles = searchRuntime(runtime, hostFilesPath)
     else:
-
+        # GPU is not present or not able to be used.
+        
         logging.info('No viable GPU available.')
         runtimeFiles = {}
 
@@ -180,11 +183,11 @@ def send(url, assets):
 
 
 if __name__ == "__main__":
-    
+
     init_logger()
 
     # wait_bootstrap()
-    
+
     API_URL = "http://agent/api/peripheral"
     HOST_FILES = '/etc/nvidia-container-runtime/host-files-for-container.d/'
     RUNTIME_PATH = '/etc/docker/'
@@ -192,7 +195,7 @@ if __name__ == "__main__":
     logging.info('Testing Logging')
 
     e = Event()
-    
+
     while True:
         send(API_URL, flow(RUNTIME_PATH, HOST_FILES))
         e.wait(timeout=90)
