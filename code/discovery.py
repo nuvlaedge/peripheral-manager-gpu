@@ -158,22 +158,21 @@ def flow(runtime, hostFilesPath):
         if dockerVersion():
 
             logging.info('--gpus is available...')
-            runtimeFiles = runtime
+            runtimeFiles = {'available': True, 'classes':['gpu'], 'identifier': 'gpu','additional-assets': runtime}
 
         else:
 
             logging.info('--gpus is not available, but GPU usage is available')
-            runtimeFiles = runtime
+            runtimeFiles = {'available': True, 'classes':['gpu'],'identifier': 'gpu','additional-assets': runtime}
     else:
         # GPU is not present or not able to be used.
 
         logging.info('No viable GPU available.')
-        runtimeFiles = {}
+        runtimeFiles = {'available': False, 'identifier': 'gpu','classes':['gpu']}
 
-    dic = {'identifier': 'gpu', 'additional-assets': runtimeFiles}
-    logging.info(dic)
+    logging.info(runtimeFiles)
 
-    return dic
+    return runtimeFiles
 
 def send(url, assets):
     if assets.keys() != None:
