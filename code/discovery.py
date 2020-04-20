@@ -173,7 +173,7 @@ def flow(runtime, hostFilesPath):
         logging.info('No viable GPU available.')
         runtimeFiles = {}
 
-    return {'additional-assets': runtimeFiles}
+    return {'identifier': 'gpu', 'additional-assets': runtimeFiles}
 
 def send(url, assets):
     if assets.keys() != None:
