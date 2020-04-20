@@ -186,6 +186,8 @@ def send(url, assets):
         return publish(url, assets)
 
 def gpuCheck(api_url):
+    logging.info('Checking if GPU already published')
+
     identifier = 'gpu'
     get_gpus = requests.get(api_url + '?identifier_pattern=' + identifier)
     
@@ -206,7 +208,6 @@ if __name__ == "__main__":
     HOST_FILES = '/etc/nvidia-container-runtime/host-files-for-container.d/'
     RUNTIME_PATH = '/etc/docker/'
 
-    logging.info('Testing Logging')
 
     e = Event()
 
