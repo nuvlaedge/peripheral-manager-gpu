@@ -58,9 +58,7 @@ def publish(url, assets):
     """
     API publishing function.
     """
-    logging.debug(url)
     x = requests.post(url, json = assets)
-    logging.info(x.json())
     return x.json()
 
 def readJson(jsonPath):
@@ -133,7 +131,6 @@ def searchRuntime(runtimePath, hostFilesPath):
         if 'nvidia' in  dic['runtimes'].keys():
 
             a = readRuntimeFiles(hostFilesPath)
-            logging.info(a)
             return a
 
         else:
@@ -173,7 +170,10 @@ def flow(runtime, hostFilesPath):
         logging.info('No viable GPU available.')
         runtimeFiles = {}
 
-    return {'identifier': 'gpu', 'additional-assets': runtimeFiles}
+    dic = {'identifier': 'gpu', 'additional-assets': runtimeFiles}
+    logging.info(dic)
+
+    return dic
 
 def send(url, assets):
     if assets.keys() != None:
