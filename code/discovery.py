@@ -126,7 +126,7 @@ def searchRuntime(runtimePath, hostFilesPath):
 
 
     for i in os.listdir(runtimePath):
-        logging.debug(i)
+
         if 'daemon.json' in i:
 
             dic = readJson(runtimePath + i)
@@ -185,6 +185,16 @@ def send(url, assets):
         logging.info("No GPU present...")
         return publish(url, assets)
 
+def gpuCheck(api_url):
+    identifier = 'gpu'
+    get_gpus = requests.get(api_url + '?identifier_pattern=' + identifier)
+    
+    logging.info(get_gpus)
+
+    if not get_gpus.ok or not isinstance(get_gpus.json(), list):
+        return False
+    
+    return True
 
 if __name__ == "__main__":
 
@@ -200,7 +210,8 @@ if __name__ == "__main__":
 
     e = Event()
 
-    ok = False
-    while not ok:
-        ok = send(API_URL, flow(RUNTIME_PATH, HOST_FILES))
-        e.wait(timeout=90)
+    if not gpuCheck(API_URL):
+        ok = False
+        while not ok:
+            ok = send(API_URL, flow(RUNTIME_PATH, HOST_FILES))
+            e.wait(timeout=90)
