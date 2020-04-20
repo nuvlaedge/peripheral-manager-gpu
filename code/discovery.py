@@ -60,7 +60,7 @@ def publish(url, assets):
     """
     logging.debug(url)
     x = requests.post(url, json = assets)
-
+    logging.info(x.json())
     return x.json()
 
 def readJson(jsonPath):
@@ -178,10 +178,10 @@ def flow(runtime, hostFilesPath):
 def send(url, assets):
     if assets.keys() != None:
         logging.info("Sending GPU information to Nuvla")
-        publish(url, assets)
+        return publish(url, assets)
     else:
         logging.info("No GPU present...")
-        publish(url, assets)
+        return publish(url, assets)
 
 
 if __name__ == "__main__":
@@ -198,6 +198,7 @@ if __name__ == "__main__":
 
     e = Event()
 
-    while True:
-        send(API_URL, flow(RUNTIME_PATH, HOST_FILES))
+    ok = False
+    while not ok:
+        ok = send(API_URL, flow(RUNTIME_PATH, HOST_FILES))
         e.wait(timeout=90)

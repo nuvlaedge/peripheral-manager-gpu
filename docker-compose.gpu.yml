@@ -11,14 +11,13 @@ x-common: &common
     - "nuvlabox.component=True"
     - "nuvlabox.deployment=production"
     - "nuvlabox.peripheral.component=True"
-    - "nuvlabox.peripheral.type=usb"
+    - "nuvlabox.peripheral.type=gpu"
 
 services:
   peripheral-manager-gpu:
     <<: *common
     image: nuvladev/peripheral-manager-gpu:dev
     restart: on-failure
-    network_mode: host
     environment:
       - NUVLABOX_UUID=${NUVLABOX_UUID}
       - NUVLA_ENDPOINT=${NUVLA_ENDPOINT:-nuvla.io}
@@ -26,4 +25,3 @@ services:
     volumes:
       - /etc:/etc:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - nuvlabox-db:/srv/nuvlabox/shared
