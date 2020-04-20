@@ -124,17 +124,19 @@ def searchRuntime(runtimePath, hostFilesPath):
     Checks if Nvidia Runtime exists, and reads its files.
     """
 
-    if 'daemon.json' in os.listdir(runtimePath):
 
-        dic = readJson(runtimePath + 'daemon.json')
+    for i in os.listdir(runtimePath):
+        if 'daemon.json' in i:
 
-        if 'nvidia' in  dic['runtimes'].keys():
+            dic = readJson(runtimePath + i)
 
-            a = readRuntimeFiles(hostFilesPath)
-            return a
+            if 'nvidia' in  dic['runtimes'].keys():
 
-        else:
-            return None
+                a = readRuntimeFiles(hostFilesPath)
+                return a
+
+            else:
+                return None
 
     return None
 
