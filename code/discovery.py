@@ -134,7 +134,7 @@ def searchRuntime(runtimePath, hostFilesPath):
 
             a = readRuntimeFiles(hostFilesPath)
             logging.info(a)
-            return {'path': dic['runtimes']['nvidia']['path'], 'files' : a}
+            return a
 
         else:
             return None
