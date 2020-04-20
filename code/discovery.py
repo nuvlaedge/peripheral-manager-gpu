@@ -191,11 +191,13 @@ def gpuCheck(api_url):
     identifier = 'gpu'
     get_gpus = requests.get(api_url + '?identifier_pattern=' + identifier)
     
-    logging.info(get_gpus)
+    logging.info(get_gpus.json())
 
     if not get_gpus.ok or not isinstance(get_gpus.json(), list):
+        logging.info('No GPU published.')
         return False
     
+    logging.info('GPU has already been published.')
     return True
 
 if __name__ == "__main__":
