@@ -126,6 +126,7 @@ def searchRuntime(runtimePath, hostFilesPath):
 
 
     for i in os.listdir(runtimePath):
+        logging.debug(i)
         if 'daemon.json' in i:
 
             dic = readJson(runtimePath + i)
