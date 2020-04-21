@@ -47,6 +47,7 @@ def wait_bootstrap():
     healthcheck_endpoint = "http://agent/api/healthcheck"
 
     r = requests.get(healthcheck_endpoint)
+    
     while not r.ok:
         time.sleep(5)
         r = requests.get(healthcheck_endpoint)
@@ -58,6 +59,7 @@ def publish(url, assets):
     """
     API publishing function.
     """
+
     x = requests.post(url, json = assets)
     return x.json()
 
@@ -65,6 +67,7 @@ def readJson(jsonPath):
     """
     JSON reader.
     """
+
     with open(jsonPath, 'r') as f:
         dic = json.load(f)
         return dic
@@ -73,11 +76,14 @@ def readCSV(path):
     """
     CSV reader.
     """
+
     lines = []
     with open(path, 'r') as csvFile:
         reader = csv.reader(csvFile)
+        
         for i in reader:
             lines.append(i)
+        
         return lines
 
 def filterCSV(lines):
@@ -85,9 +91,11 @@ def filterCSV(lines):
     Filters the correct information from the runtime CSV files.
     """
     filteredLines = {'devices': [], 'libraries': []}
+    
     for i in lines:
         if i[0] == 'lib' :
             filteredLines['libraries'].append(i[1].strip())
+    
         elif i[0] == 'dev':
             filteredLines['devices'].append(i[1].strip())
 
@@ -99,9 +107,11 @@ def checkCuda():
     Checks if CUDA is installed and returns the version.
     """
     version = which('nvcc')
+   
     if version is not None:
         with open(version + '/version.txt', 'r') as f:
             v = f.readline()
+    
             return v
     else:
         return False
@@ -111,12 +121,17 @@ def dockerVersion():
     Checks if the Docker Engine version and the Docker API version are enough to run --gpus.
     """
     version = docker.from_env().version()
+    
     for i in version['Components']:
+    
         if i['Name'] == 'Engine':
+
             engineVersion = int(i['Version'].split('.')[0])
             apiVersion = float(i['Details']['ApiVersion'])
+    
             if engineVersion >= 19 and apiVersion >= 1.4:
                 return True
+
     return False
 
 def searchRuntime(runtimePath, hostFilesPath):
@@ -128,17 +143,15 @@ def searchRuntime(runtimePath, hostFilesPath):
     for i in os.listdir(runtimePath):
 
         if 'daemon.json' in i:
-
             dic = readJson(runtimePath + i)
 
             if 'nvidia' in  dic['runtimes'].keys():
-
                 a = readRuntimeFiles(hostFilesPath)
+
                 return a
-
             else:
-                return None
 
+                return None
     return None
 
 def readRuntimeFiles(path):
@@ -146,25 +159,27 @@ def readRuntimeFiles(path):
     Checks if the runtime files exist, reads them, and filters the correct information.
     """
     if os.path.isdir(path) and len(os.listdir(path)) > 0:
+
         allLines = []
         for i in os.listdir(path):
+        
             for i in readCSV(path + i):
                 allLines.append(i)
+        
         return filterCSV(allLines)
     return None
 
 def flow(runtime, hostFilesPath):
     runtime = searchRuntime(runtime, hostFilesPath)
+
     if runtime is not None:
         # GPU is present and able to be used
 
         if dockerVersion():
-
             logging.info('--gpus is available...')
             runtimeFiles = {'available': True, 'name': 'GPU', 'classes':['gpu'], 'identifier': 'gpu','additional-assets': runtime}
 
         else:
-
             logging.info('--gpus is not available, but GPU usage is available')
             runtimeFiles = {'available': True, 'name': 'GPU', 'classes':['gpu'],'identifier': 'gpu','additional-assets': runtime}
     else:
@@ -174,13 +189,14 @@ def flow(runtime, hostFilesPath):
         runtimeFiles = {'available': False, 'name': 'GPU', 'identifier': 'gpu','classes':['gpu']}
 
     logging.info(runtimeFiles)
-
     return runtimeFiles
 
 def send(url, assets):
+
     if assets.keys() != None:
         logging.info("Sending GPU information to Nuvla")
         return publish(url, assets)
+    
     else:
         logging.info("No GPU present...")
         return publish(url, assets)
