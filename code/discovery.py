@@ -161,17 +161,17 @@ def flow(runtime, hostFilesPath):
         if dockerVersion():
 
             logging.info('--gpus is available...')
-            runtimeFiles = {'available': True, 'classes':['gpu'], 'identifier': 'gpu','additional-assets': runtime}
+            runtimeFiles = {'available': True, 'name': 'GPU', 'classes':['gpu'], 'identifier': 'gpu','additional-assets': runtime}
 
         else:
 
             logging.info('--gpus is not available, but GPU usage is available')
-            runtimeFiles = {'available': True, 'classes':['gpu'],'identifier': 'gpu','additional-assets': runtime}
+            runtimeFiles = {'available': True, 'name': 'GPU', 'classes':['gpu'],'identifier': 'gpu','additional-assets': runtime}
     else:
         # GPU is not present or not able to be used.
 
         logging.info('No viable GPU available.')
-        runtimeFiles = {'available': False, 'identifier': 'gpu','classes':['gpu']}
+        runtimeFiles = {'available': False, 'name': 'GPU', 'identifier': 'gpu','classes':['gpu']}
 
     logging.info(runtimeFiles)
 
