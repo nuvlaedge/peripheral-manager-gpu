@@ -193,7 +193,7 @@ def gpuCheck(api_url):
     
     logging.info(get_gpus.json())
 
-    if not get_gpus.ok or not isinstance(get_gpus.json(), list):
+    if not get_gpus.ok or not isinstance(get_gpus.json(), list) or len(get_gpus.json()) == 0:
         logging.info('No GPU published.')
         return False
     
