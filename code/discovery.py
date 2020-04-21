@@ -4,11 +4,11 @@
 
 """NuvlaBox Peripheral GPU Manager
 
-This service provides GPU discovery of a NuvlaBox.
+This service provides GPU discovery for the NuvlaBox.
 
 It provides:
     - Nvidia Docker Runtime discovery
-    - provides the correct devices and libraries needed to use a GPU.
+    - a list of the devices and libraries needed to use a GPU.
     - checks if Docker is the correct version to use --gpus.
 """
 
@@ -17,12 +17,14 @@ import csv
 import sys
 import json
 from shutil import which
-import subprocess
 import requests
 import docker
 import logging
 from threading import Event
 import time
+
+identifier = 'GPU'
+
 
 def init_logger():
     """ Initializes logging """
@@ -37,14 +39,12 @@ def init_logger():
     root.addHandler(handler)
 
 
-def wait_bootstrap():
+def wait_bootstrap(healthcheck_endpoint="http://agent/api/healthcheck"):
     """ Simply waits for the NuvlaBox to finish bootstrapping, by pinging the Agent API
     :returns
     """
 
     logging.info("Checking if NuvlaBox has been initialized...")
-
-    healthcheck_endpoint = "http://agent/api/healthcheck"
 
     r = requests.get(healthcheck_endpoint)
     
@@ -55,51 +55,24 @@ def wait_bootstrap():
     logging.info('NuvlaBox has been initialized.')
     return
 
+
 def publish(url, assets):
     """
     API publishing function.
     """
 
-    x = requests.post(url, json = assets)
+    x = requests.post(url, json=assets)
     return x.json()
+
 
 def readJson(jsonPath):
     """
     JSON reader.
     """
 
-    with open(jsonPath, 'r') as f:
+    with open(jsonPath) as f:
         dic = json.load(f)
         return dic
-
-def readCSV(path):
-    """
-    CSV reader.
-    """
-
-    lines = []
-    with open(path, 'r') as csvFile:
-        reader = csv.reader(csvFile)
-        
-        for i in reader:
-            lines.append(i)
-        
-        return lines
-
-def filterCSV(lines):
-    """
-    Filters the correct information from the runtime CSV files.
-    """
-    filteredLines = {'devices': [], 'libraries': []}
-    
-    for i in lines:
-        if i[0] == 'lib' :
-            filteredLines['libraries'].append(i[1].strip())
-    
-        elif i[0] == 'dev':
-            filteredLines['devices'].append(i[1].strip())
-
-    return filteredLines
 
 
 def checkCuda():
@@ -115,6 +88,7 @@ def checkCuda():
             return v
     else:
         return False
+
 
 def dockerVersion():
     """
@@ -134,40 +108,59 @@ def dockerVersion():
 
     return False
 
+
 def searchRuntime(runtimePath, hostFilesPath):
     """
     Checks if Nvidia Runtime exists, and reads its files.
     """
-
 
     for i in os.listdir(runtimePath):
 
         if 'daemon.json' in i:
             dic = readJson(runtimePath + i)
 
-            if 'nvidia' in  dic['runtimes'].keys():
-                a = readRuntimeFiles(hostFilesPath)
+            try:
+                if 'nvidia' in dic['runtimes'].keys():
+                    a = readRuntimeFiles(hostFilesPath)
 
-                return a
-            else:
-
+                    return a
+                else:
+                    return None
+            except KeyError:
+                logging.exception("Runtimes not configured in Docker configuration")
                 return None
+
     return None
+
 
 def readRuntimeFiles(path):
     """
     Checks if the runtime files exist, reads them, and filters the correct information.
     """
     if os.path.isdir(path) and len(os.listdir(path)) > 0:
+        filteredLines = {'devices': [], 'libraries': []}
 
-        allLines = []
         for i in os.listdir(path):
-        
-            for i in readCSV(path + i):
-                allLines.append(i)
-        
-        return filterCSV(allLines)
+
+            with open(path + i) as csvFile:
+                reader = csv.reader(csvFile)
+
+                for line in reader:
+                    try:
+                        if line[0] == 'lib':
+                            filteredLines['libraries'].append(line[1].strip())
+
+                        elif line[0] == 'dev':
+                            filteredLines['devices'].append(line[1].strip())
+
+                        else:
+                            continue
+                    except IndexError:
+                        continue
+
+        return filteredLines
     return None
+
 
 def flow(runtime, hostFilesPath):
     runtime = searchRuntime(runtime, hostFilesPath)
@@ -176,35 +169,40 @@ def flow(runtime, hostFilesPath):
         # GPU is present and able to be used
 
         if dockerVersion():
-            logging.info('--gpus is available...')
-            runtimeFiles = {'available': True, 'name': 'GPU', 'classes':['gpu'], 'identifier': 'gpu','additional-assets': runtime}
+            logging.info('--gpus is available in Docker...')
 
         else:
-            logging.info('--gpus is not available, but GPU usage is available')
-            runtimeFiles = {'available': True, 'name': 'GPU', 'classes':['gpu'],'identifier': 'gpu','additional-assets': runtime}
+            logging.info('--gpus is not available in Docker, but GPU usage is available')
+
+        runtimeFiles = {
+            'available': True,
+            'name': 'Graphics Processing Unit',
+            'classes': ['gpu'],
+            'identifier': identifier,
+            'additional-assets': runtime
+        }
+
+        logging.info(runtimeFiles)
+        return runtimeFiles
     else:
         # GPU is not present or not able to be used.
-
         logging.info('No viable GPU available.')
-        runtimeFiles = {'available': False, 'name': 'GPU', 'identifier': 'gpu','classes':['gpu']}
 
-    logging.info(runtimeFiles)
-    return runtimeFiles
+        return None
+
 
 def send(url, assets):
+    """ Sends POST request for registering new peripheral """
 
-    if assets.keys() != None:
-        logging.info("Sending GPU information to Nuvla")
-        return publish(url, assets)
-    
-    else:
-        logging.info("No GPU present...")
-        return publish(url, assets)
+    logging.info("Sending GPU information to Nuvla")
+    return publish(url, assets)
+
 
 def gpuCheck(api_url):
+    """ Checks if peripheral already exists """
+
     logging.info('Checking if GPU already published')
 
-    identifier = 'gpu'
     get_gpus = requests.get(api_url + '?identifier_pattern=' + identifier)
     
     logging.info(get_gpus.json())
@@ -216,21 +214,27 @@ def gpuCheck(api_url):
     logging.info('GPU has already been published.')
     return True
 
+
 if __name__ == "__main__":
 
     init_logger()
 
+    API_BASE_URL = "http://agent/api"
+
     wait_bootstrap()
 
-    API_URL = "http://agent/api/peripheral"
+    API_URL = API_BASE_URL + "/peripheral"
     HOST_FILES = '/etc/nvidia-container-runtime/host-files-for-container.d/'
     RUNTIME_PATH = '/etc/docker/'
 
-
     e = Event()
 
-    if not gpuCheck(API_URL):
-        ok = False
-        while not ok:
-            ok = send(API_URL, flow(RUNTIME_PATH, HOST_FILES))
-            e.wait(timeout=90)
+    while True:
+        gpu_peripheral = flow(RUNTIME_PATH, HOST_FILES)
+        if gpu_peripheral:
+            peripheral_already_registered = gpuCheck(API_URL)
+
+            if not peripheral_already_registered:
+                send(API_URL, gpu_peripheral)
+
+        e.wait(timeout=90)

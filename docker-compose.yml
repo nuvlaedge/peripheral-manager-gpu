@@ -1,4 +1,4 @@
-version: "3.7"
+version: "3.6"
 
 services:
   peripheral-manager-gpu:
@@ -6,6 +6,7 @@ services:
     restart: on-failure
     volumes:
       - /etc/:/etc/:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     labels:
       - nuvlabox.component=True
       - nuvlabox.deployment=production

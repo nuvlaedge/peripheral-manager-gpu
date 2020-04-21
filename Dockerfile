@@ -1,6 +1,5 @@
 FROM python:3-alpine
 
-
 COPY code/ /opt/nuvlabox/
 
 WORKDIR /opt/nuvlabox/
