@@ -74,6 +74,8 @@ def readJson(jsonPath):
         dic = json.load(f)
         return dic
 
+def getDeviceType():
+    return os.uname().machine
 
 def checkCuda():
     """
@@ -88,6 +90,54 @@ def checkCuda():
             return v
     else:
         return False
+
+def checkCudaInstalation(version):
+    if 'libcuda.so' in os.listdir('/usr/lib/{}-linux-gnu'.format(version)) and 'cuda' in os.listdir('/usr/local/'):
+        return True
+    else:
+        return False
+
+def buildCudaCoreDockerCLI(devices, image, version):
+
+    cli_devices = []
+    cli_volumes = {}
+
+    for device in devices:
+        cli_devices.append('{0}:{0}:rwm'.format(device))
+
+    libcuda = '/usr/lib/{0}-linux-gnu/libcuda.so'.format(version)
+    cuda = '/usr/local/cuda'
+    
+    cli_volumes[libcuda] = {'bind': libcuda, 'mode': 'ro'}
+    cli_volumes[cuda] = {'bind': cuda, 'mode': 'ro'}
+
+    # run = 'docker run '
+
+    # for device in devices:
+    #     run += '--device {}'.format(device)
+    
+    # run += '-v /usr/lib/{0}-linux-gnu/libcuda.so:/usr/lib/{0}-linux-gnu/libcuda.so -v /usr/local/cuda:/usr/local/cuda'.format(version)
+
+    # run += '{} python3 check-cuda.py'.format(image)
+
+    return cli_devices, cli_volumes
+
+def buildDockerCLI(devices, libs):
+    run = 'docker run '
+    
+    for i in devices:
+        run += '--devices {} '.format(i)
+    
+    for i in libs:
+        run += '-v {}:{}'.format(i, i)
+
+    return run
+
+def cudaCores(image, devices, volumes):
+    client = docker.from_env()
+    version = getDeviceType()
+    pass_devices, pass_volumes = buildCudaCoreDockerCLI(devices, volumes, version)
+    return client.containers.run(image, devices=pass_devices, volumes=pass_volumes, detach=True)
 
 
 def dockerVersion():
