@@ -129,8 +129,10 @@ def buildCudaCoreDockerCLI(devices):
     cli_devices = []
     cli_volumes = {}
 
+    non_devices = ['/dev/nvhost-nvdec1', '/dev/nvhost-nvenc1']
+
     for device in devices:
-        if device != 'nvhost-nvdec1' and device != '/dev/nvhost-nvdec1':
+        if device not in non_devices:
             cli_devices.append('{0}:{0}:rwm'.format(device))
     
     version = getDeviceType()
@@ -167,15 +169,7 @@ def cudaCores(image, devices, volumes, gpus):
     Starts Cuda Core container and returns the output from the container
     """
     client = docker.from_env()
-    if gpus:
-        device_request = {
-            'Driver': 'nvidia',
-            'Capabilities': [['gpu']],  # not sure which capabilities are really needed
-            'Count': -1,  # enable all gpus
-        }
-        container = client.containers.run(image, device_requests=[docker.types.DeviceRequest(count=-1, capabilities=[['gpu']])], volumes=volumes)
-    else:
-        container = client.containers.run(image, devices=devices, volumes=volumes)
+    container = client.containers.run(image, devices=devices, volumes=volumes)
     return str(container)
 
 
