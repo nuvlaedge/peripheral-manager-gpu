@@ -272,7 +272,7 @@ def cuda_cores(nvDevices, gpus):
 
     devices, libs = buildCudaCoreDockerCLI(nvDevices)
     print(devices)
-    output = cudaCores(image, devices, libs, gpues)
+    output = cudaCores(image, devices, libs, gpus)
     information = cudaInformation(output)
     return information
 
@@ -309,7 +309,7 @@ def flow(runtime, hostFilesPath):
         # A GPU is present, and ready to be used, but not with --gpus
         nvDevices = nvidiaDevice(os.listdir('/dev/'))
         devices, libs = buildCudaCoreDockerCLI(nvDevices)
-        output = cudaCores(image, devices, libs)
+        output = cudaCores(image, devices, libs, False)
         information = cudaInformation(output)
 
 
