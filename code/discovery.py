@@ -157,6 +157,8 @@ def buildCudaCoreDockerCLI(devices):
 
 def buildDockerCLI(devices, libs):
     """
+    DEPRECEATED
+
     Creates Docker CLI string to be used on a system call.
     """
     run = 'docker run '
