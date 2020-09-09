@@ -133,11 +133,14 @@ def buildCudaCoreDockerCLI(devices):
         cli_devices.append('{0}:{0}:rwm'.format(device))
     
     version = getDeviceType()
+    
     libcuda = '/usr/lib/{0}-linux-gnu/libcuda.so'.format(version)
     cuda = '/usr/local/cuda'
+    etc = '/etc/'
 
     cli_volumes[libcuda] = {'bind': libcuda, 'mode': 'ro'}
     cli_volumes[cuda] = {'bind': cuda, 'mode': 'ro'}
+    cli_volumes[etc] = {'bind':  etc, 'mode': 'ro'}
 
 
     return cli_devices, cli_volumes
@@ -268,6 +271,7 @@ def flow(runtime, hostFilesPath):
     runtime = searchRuntime(runtime, hostFilesPath)
 
     if runtime is not None:
+
         # GPU is present and able to be used
 
         if dockerVersion():
@@ -291,6 +295,7 @@ def flow(runtime, hostFilesPath):
         return runtimeFiles
 
     elif len(nvidiaDevice(os.listdir('/dev/'))) > 0 and checkCudaInstalation(getDeviceType()):
+
         # A GPU is present, and ready to be used, but not with --gpus
         nvDevices = nvidiaDevice(os.listdir('/dev/'))
         devices, libs = buildCudaCoreDockerCLI(nvDevices)
@@ -313,7 +318,6 @@ def flow(runtime, hostFilesPath):
         return runtimeFiles
 
     else:
-
 
         # GPU is not present or not able to be used.
         logging.info('No viable GPU available.')
