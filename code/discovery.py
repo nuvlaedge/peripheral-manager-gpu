@@ -22,9 +22,11 @@ import docker
 import logging
 from threading import Event
 import time
+import subprocess
 
 identifier = 'GPU'
-
+# image = 'franciscomendonca/cuda-core:1.0'
+image = 'cuda-cores'
 
 def init_logger():
     """ Initializes logging """
@@ -74,8 +76,13 @@ def readJson(jsonPath):
         dic = json.load(f)
         return dic
 
+
 def getDeviceType():
+    """
+    Gets device type (x86_64, aarch64, arm64)
+    """
     return os.uname().machine
+
 
 def checkCuda():
     """
@@ -91,38 +98,58 @@ def checkCuda():
     else:
         return False
 
+
+def nvidiaDevice(devices):
+    """
+    Checks if any Nvidia device exist
+    """
+    nvDevices = []
+
+    for device in devices:
+        if device.startswith('nv'):
+            nvDevices.append('/dev/{}'.format(device))
+    
+    return nvDevices
+
+
 def checkCudaInstalation(version):
+    """
+    Checks if Cuda is installed.
+    """
     if 'libcuda.so' in os.listdir('/usr/lib/{}-linux-gnu'.format(version)) and 'cuda' in os.listdir('/usr/local/'):
         return True
     else:
         return False
 
-def buildCudaCoreDockerCLI(devices, image, version):
 
+def buildCudaCoreDockerCLI(devices):
+    """
+    Creates the correct device and volume structures to be passed to docker.
+    """
     cli_devices = []
     cli_volumes = {}
 
     for device in devices:
         cli_devices.append('{0}:{0}:rwm'.format(device))
-
+    
+    version = getDeviceType()
+    
     libcuda = '/usr/lib/{0}-linux-gnu/libcuda.so'.format(version)
     cuda = '/usr/local/cuda'
-    
+    etc = '/etc/'
+
     cli_volumes[libcuda] = {'bind': libcuda, 'mode': 'ro'}
     cli_volumes[cuda] = {'bind': cuda, 'mode': 'ro'}
+    cli_volumes[etc] = {'bind':  etc, 'mode': 'ro'}
 
-    # run = 'docker run '
-
-    # for device in devices:
-    #     run += '--device {}'.format(device)
-    
-    # run += '-v /usr/lib/{0}-linux-gnu/libcuda.so:/usr/lib/{0}-linux-gnu/libcuda.so -v /usr/local/cuda:/usr/local/cuda'.format(version)
-
-    # run += '{} python3 check-cuda.py'.format(image)
 
     return cli_devices, cli_volumes
 
+
 def buildDockerCLI(devices, libs):
+    """
+    Creates Docker CLI string to be used on a system call.
+    """
     run = 'docker run '
     
     for i in devices:
@@ -133,11 +160,31 @@ def buildDockerCLI(devices, libs):
 
     return run
 
+
 def cudaCores(image, devices, volumes):
+    """
+    Starts Cuda Core container and returns the output from the container
+    """
     client = docker.from_env()
-    version = getDeviceType()
-    pass_devices, pass_volumes = buildCudaCoreDockerCLI(devices, volumes, version)
-    return client.containers.run(image, devices=pass_devices, volumes=pass_volumes, detach=True)
+    container = client.containers.run(image, devices=devices, volumes=volumes)
+    return str(container)
+
+
+def cudaInformation(output):
+    """
+    Gets the output from the container and returns GPU information
+    """
+    device_information = {}
+    info = [i.split(":")[1] for i in output.split('\\n')[1:-1]]
+    device_information['device-name'] = info[1]
+    device_information['multiprocessors'] = info[3]
+    device_information['cuda-cores'] = info[4]
+    device_information['concurrent-threads'] = info[5]
+    device_information['gpu-clock'] = info[6]
+    device_information['memory-clock'] = info[7]
+    device_information['memory'] = info[8]
+
+    return device_information
 
 
 def dockerVersion():
@@ -212,10 +259,19 @@ def readRuntimeFiles(path):
     return None
 
 
+def cuda_cores(nvDevices):
+    devices, libs = buildCudaCoreDockerCLI(nvDevices)
+
+    output = cudaCores(image, devices, libs)
+    information = cudaInformation(output)
+    return information
+
+
 def flow(runtime, hostFilesPath):
     runtime = searchRuntime(runtime, hostFilesPath)
 
     if runtime is not None:
+
         # GPU is present and able to be used
 
         if dockerVersion():
@@ -223,10 +279,13 @@ def flow(runtime, hostFilesPath):
 
         else:
             logging.info('--gpus is not available in Docker, but GPU usage is available')
+        
+        runtime['device-information'] = cuda_cores(runtime['devices'])
 
         runtimeFiles = {
             'available': True,
             'name': 'Graphics Processing Unit',
+            'vendor': 'Nvidia',
             'classes': ['gpu'],
             'identifier': identifier,
             'additional-assets': runtime
@@ -234,7 +293,32 @@ def flow(runtime, hostFilesPath):
 
         logging.info(runtimeFiles)
         return runtimeFiles
+
+    elif len(nvidiaDevice(os.listdir('/dev/'))) > 0 and checkCudaInstalation(getDeviceType()):
+
+        # A GPU is present, and ready to be used, but not with --gpus
+        nvDevices = nvidiaDevice(os.listdir('/dev/'))
+        devices, libs = buildCudaCoreDockerCLI(nvDevices)
+        output = cudaCores(image, devices, libs)
+        information = cudaInformation(output)
+
+
+        runtime = {'device-information': information, 'devices': devices, 'libraries': libs}
+
+
+        runtimeFiles = {
+            'available': True,
+            'name': 'Graphics Processing Unit',
+            'vendor': 'Nvidia',
+            'classes': ['gpu'],
+            'identifier': identifier,
+            'additional-assets': runtime
+        }
+
+        return runtimeFiles
+
     else:
+
         # GPU is not present or not able to be used.
         logging.info('No viable GPU available.')
 
@@ -271,20 +355,23 @@ if __name__ == "__main__":
 
     API_BASE_URL = "http://agent/api"
 
-    wait_bootstrap()
+    # wait_bootstrap()
 
     API_URL = API_BASE_URL + "/peripheral"
     HOST_FILES = '/etc/nvidia-container-runtime/host-files-for-container.d/'
     RUNTIME_PATH = '/etc/docker/'
 
-    e = Event()
+    # e = Event()
 
-    while True:
-        gpu_peripheral = flow(RUNTIME_PATH, HOST_FILES)
-        if gpu_peripheral:
-            peripheral_already_registered = gpuCheck(API_URL)
+    # while True:
+    #     gpu_peripheral = flow(RUNTIME_PATH, HOST_FILES)
+    #     if gpu_peripheral:
+    #         peripheral_already_registered = gpuCheck(API_URL)
 
-            if not peripheral_already_registered:
-                send(API_URL, gpu_peripheral)
+    #         if not peripheral_already_registered:
+    #             send(API_URL, gpu_peripheral)
 
-        e.wait(timeout=90)
+    #     e.wait(timeout=90)
+
+
+    print(flow(RUNTIME_PATH, HOST_FILES))
