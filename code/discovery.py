@@ -268,11 +268,11 @@ def readRuntimeFiles(path):
     return None
 
 
-def cuda_cores(nvDevices):
+def cuda_cores(nvDevices, gpus):
 
     devices, libs = buildCudaCoreDockerCLI(nvDevices)
     print(devices)
-    output = cudaCores(image, devices, libs)
+    output = cudaCores(image, devices, libs, gpues)
     information = cudaInformation(output)
     return information
 
@@ -290,7 +290,7 @@ def flow(runtime, hostFilesPath):
         else:
             logging.info('--gpus is not available in Docker, but GPU usage is available')
         
-        runtime['device-information'] = cuda_cores(runtime['devices'])
+        runtime['device-information'] = cuda_cores(runtime['devices'], True)
 
         runtimeFiles = {
             'available': True,
