@@ -130,7 +130,7 @@ def buildCudaCoreDockerCLI(devices):
     cli_volumes = {}
 
     for device in devices:
-        if device != 'nvhost-nvdec1':
+        if device != 'nvhost-nvdec1' and device != '/dev/nvhost-nvdec1':
             cli_devices.append('{0}:{0}:rwm'.format(device))
     
     version = getDeviceType()
