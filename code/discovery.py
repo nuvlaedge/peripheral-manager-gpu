@@ -162,12 +162,20 @@ def buildDockerCLI(devices, libs):
     return run
 
 
-def cudaCores(image, devices, volumes):
+def cudaCores(image, devices, volumes, gpus):
     """
     Starts Cuda Core container and returns the output from the container
     """
     client = docker.from_env()
-    container = client.containers.run(image, devices=devices, volumes=volumes)
+    if gpus:
+        device_request = {
+            'Driver': 'nvidia',
+            'Capabilities': [['gpu']],  # not sure which capabilities are really needed
+            'Count': -1,  # enable all gpus
+        }
+        container = client.container.run(image, device_request, volumes=volumes)
+    else:
+        container = client.containers.run(image, devices=devices, volumes=volumes)
     return str(container)
 
 
