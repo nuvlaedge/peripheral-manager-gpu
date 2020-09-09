@@ -261,8 +261,9 @@ def readRuntimeFiles(path):
 
 
 def cuda_cores(nvDevices):
-    devices, libs = buildCudaCoreDockerCLI(nvDevices)
 
+    devices, libs = buildCudaCoreDockerCLI(nvDevices)
+    print(devices)
     output = cudaCores(image, devices, libs)
     information = cudaInformation(output)
     return information
