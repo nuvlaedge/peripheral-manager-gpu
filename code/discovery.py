@@ -281,6 +281,15 @@ def cuda_cores(nvDevices, gpus):
 def flow(runtime, hostFilesPath):
     runtime = searchRuntime(runtime, hostFilesPath)
 
+    runtimeFiles = {
+        'available': True,
+        'name': 'Graphics Processing Unit',
+        'vendor': 'Nvidia',
+        'classes': ['gpu'],
+        'identifier': identifier,
+        'additional-assets': runtime
+    }
+
     if runtime is not None:
 
         # GPU is present and able to be used
@@ -293,14 +302,7 @@ def flow(runtime, hostFilesPath):
         
         runtime['device-information'] = cuda_cores(runtime['devices'], True)
 
-        runtimeFiles = {
-            'available': True,
-            'name': 'Graphics Processing Unit',
-            'vendor': 'Nvidia',
-            'classes': ['gpu'],
-            'identifier': identifier,
-            'additional-assets': runtime
-        }
+        runtimeFiles['additional-assets'] = runtime
 
         logging.info(runtimeFiles)
         return runtimeFiles
@@ -316,16 +318,8 @@ def flow(runtime, hostFilesPath):
 
         runtime = {'device-information': information, 'devices': devices, 'libraries': libs}
 
-
-        runtimeFiles = {
-            'available': True,
-            'name': 'Graphics Processing Unit',
-            'vendor': 'Nvidia',
-            'classes': ['gpu'],
-            'identifier': identifier,
-            'additional-assets': runtime
-        }
-
+        runtimeFiles['additional-assets'] = runtime
+        logging.info(runtimeFiles)
         return runtimeFiles
 
     else:
