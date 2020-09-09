@@ -133,7 +133,8 @@ def buildCudaCoreDockerCLI(devices):
                    '/dev/nvhost-nvenc1', 
                    '/dev/nvhost-ctrl-nvdla0', 
                    '/dev/nvhost-ctrl-nvdla1', 
-                   '/dev/nvhost-nvdla0'
+                   '/dev/nvhost-nvdla0',
+                   '/dev/nvhost-nvdla1'
                    ]
 
     for device in devices:
