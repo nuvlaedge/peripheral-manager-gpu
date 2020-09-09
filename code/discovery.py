@@ -143,7 +143,7 @@ def buildCudaCoreDockerCLI(devices):
     
     version = getDeviceType()
     
-    libcuda = '/usr/lib/{0}-linux-gnu/libcuda.so'.format(version)
+    libcuda = '/usr/lib/{0}-linux-gnu/'.format(version)
     cuda = '/usr/local/cuda'
     etc = '/etc/'
 
