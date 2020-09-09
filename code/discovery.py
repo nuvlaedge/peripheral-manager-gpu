@@ -129,7 +129,7 @@ def buildCudaCoreDockerCLI(devices):
     cli_devices = []
     cli_volumes = {}
 
-    non_devices = ['/dev/nvhost-nvdec1', '/dev/nvhost-nvenc1']
+    non_devices = ['/dev/nvhost-nvdec1', '/dev/nvhost-nvenc1', '/dev/nvhost-ctrl-nvdla0']
 
     for device in devices:
         if device not in non_devices:
