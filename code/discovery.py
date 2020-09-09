@@ -173,7 +173,7 @@ def cudaCores(image, devices, volumes, gpus):
             'Capabilities': [['gpu']],  # not sure which capabilities are really needed
             'Count': -1,  # enable all gpus
         }
-        container = client.container.run(image, device_request, volumes=volumes)
+        container = client.containers.run(image, device_request, volumes=volumes)
     else:
         container = client.containers.run(image, devices=devices, volumes=volumes)
     return str(container)
@@ -271,7 +271,6 @@ def readRuntimeFiles(path):
 def cuda_cores(nvDevices, gpus):
 
     devices, libs = buildCudaCoreDockerCLI(nvDevices)
-    print(devices)
     output = cudaCores(image, devices, libs, gpus)
     information = cudaInformation(output)
     return information
