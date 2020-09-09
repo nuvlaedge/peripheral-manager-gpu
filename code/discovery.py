@@ -173,7 +173,7 @@ def cudaCores(image, devices, volumes, gpus):
             'Capabilities': [['gpu']],  # not sure which capabilities are really needed
             'Count': -1,  # enable all gpus
         }
-        container = client.containers.run(image, device_request, volumes=volumes)
+        container = client.containers.run(image, device_requests=[docker.types.DeviceRequest(count=-1, capabilities=[['gpu']])], volumes=volumes)
     else:
         container = client.containers.run(image, devices=devices, volumes=volumes)
     return str(container)
