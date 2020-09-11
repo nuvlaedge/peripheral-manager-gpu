@@ -26,7 +26,7 @@ import subprocess
 
 identifier = 'GPU'
 # image = 'franciscomendonca/cuda-core:1.0'
-image = 'cuda'
+image = 'nuvlabox_cuda_core_information'
 
 def init_logger():
     """ Initializes logging """
@@ -88,6 +88,7 @@ def checkCuda():
     """
     Checks if CUDA is installed and returns the version.
     """
+    
     version = which('nvcc')
    
     if version is not None:
@@ -116,7 +117,7 @@ def checkCudaInstalation(version):
     """
     Checks if Cuda is installed.
     """
-    if 'libcuda.so' in os.listdir('/usr/lib/{}-linux-gnu'.format(version)) and 'cuda' in os.listdir('/usr/local/'):
+    if 'libcuda.so' in os.listdir('/usr/lib/{}-linux-gnu'.format(version)):
         return True
     else:
         return False
@@ -164,7 +165,9 @@ def cudaCores(image, devices, volumes, gpus):
     client = docker.from_env()
 
     # Build Image
-    client.images.build(path='.',  tag=image, dockerfile='Dockerfile.gpu')
+    if len(client.images.list(image)) == 0:
+        logging.info('Build CUDA Cores Image')
+        client.images.build(path='.',  tag=image, dockerfile='Dockerfile.gpu')
 
     try:
         container = client.containers.run(image, devices=devices, volumes=volumes)
@@ -362,14 +365,18 @@ if __name__ == "__main__":
     HOST_FILES = '/etc/nvidia-container-runtime/host-files-for-container.d/'
     RUNTIME_PATH = '/etc/docker/'
 
-    e = Event()
+    # e = Event()
 
-    while True:
-        gpu_peripheral = flow(RUNTIME_PATH, HOST_FILES)
-        if gpu_peripheral:
-            peripheral_already_registered = gpuCheck(API_URL)
+    # while True:
+    #     gpu_peripheral = flow(RUNTIME_PATH, HOST_FILES)
+    #     if gpu_peripheral:
+    #         peripheral_already_registered = gpuCheck(API_URL)
 
-            if not peripheral_already_registered:
-                send(API_URL, gpu_peripheral)
+    #         if not peripheral_already_registered:
+    #             send(API_URL, gpu_peripheral)
 
-        e.wait(timeout=90)
+    #     e.wait(timeout=90)
+
+    print(nvidiaDevice(os.listdir('/dev/')))
+    print(checkCudaInstalation(getDeviceType()))
+    print(flow(RUNTIME_PATH, HOST_FILES))

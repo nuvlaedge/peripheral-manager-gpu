@@ -8,4 +8,5 @@ RUN pip3 install -r ./requirements.txt
 
 RUN rm -rf /var/cache/apk/*
 
-ENTRYPOINT ["./discovery.py"]
+
+# ENTRYPOINT ["./discovery.py"]
