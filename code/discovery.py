@@ -129,14 +129,6 @@ def buildCudaCoreDockerCLI(devices):
     cli_devices = []
     cli_volumes = {}
 
-    # non_devices = ['/dev/nvhost-nvdec1', 
-    #                '/dev/nvhost-nvenc1', 
-    #                '/dev/nvhost-ctrl-nvdla0', 
-    #                '/dev/nvhost-ctrl-nvdla1', 
-    #                '/dev/nvhost-nvdla0',
-    #                '/dev/nvhost-nvdla1'
-    #                ]
-    
     current_devices = ['/dev/{}'.format(i) for i in os.listdir('/dev/')]
 
     for device in devices:
@@ -370,17 +362,14 @@ if __name__ == "__main__":
     HOST_FILES = '/etc/nvidia-container-runtime/host-files-for-container.d/'
     RUNTIME_PATH = '/etc/docker/'
 
-    # e = Event()
+    e = Event()
 
-    # while True:
-    #     gpu_peripheral = flow(RUNTIME_PATH, HOST_FILES)
-    #     if gpu_peripheral:
-    #         peripheral_already_registered = gpuCheck(API_URL)
+    while True:
+        gpu_peripheral = flow(RUNTIME_PATH, HOST_FILES)
+        if gpu_peripheral:
+            peripheral_already_registered = gpuCheck(API_URL)
 
-    #         if not peripheral_already_registered:
-    #             send(API_URL, gpu_peripheral)
+            if not peripheral_already_registered:
+                send(API_URL, gpu_peripheral)
 
-    #     e.wait(timeout=90)
-
-
-    print(flow(RUNTIME_PATH, HOST_FILES))
+        e.wait(timeout=90)
