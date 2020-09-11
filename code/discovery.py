@@ -23,10 +23,12 @@ import logging
 from threading import Event
 import time
 import subprocess
+from packaging import version
+
 
 identifier = 'GPU'
 # image = 'franciscomendonca/cuda-core:1.0'
-image = 'nuvlabox_cuda_core_information'
+image = 'nuvlabox_cuda_core_information/{}'
 
 def init_logger():
     """ Initializes logging """
@@ -88,7 +90,6 @@ def checkCuda():
     """
     Checks if CUDA is installed and returns the version.
     """
-    
     version = which('nvcc')
    
     if version is not None:
@@ -157,6 +158,25 @@ def buildCudaCoreDockerCLI(devices):
     return cli_devices, cli_volumes
 
 
+def getCurrentImageVersion(client):
+    peripheralVersion = ''
+    cudaCoreVersion = ''
+    
+    for container in client.containers.list():
+        img, tag = container.image.attrs['RepoTags'][0].split(':')
+        if img == 'nuvlabox/peripheral-manager-gpu':
+            peripheralVersion = tag
+        elif img == image:
+            cudaCoreVersion = tag
+
+    if version.parse(peripheralVersion) > version.parse(cudaCoreVersion):
+        return peripheralVersion
+
+    else:
+        return ''
+     
+
+
 def cudaCores(image, devices, volumes, gpus):
     """
     Starts Cuda Core container and returns the output from the container
@@ -164,8 +184,10 @@ def cudaCores(image, devices, volumes, gpus):
 
     client = docker.from_env()
 
+    currentVersion = getCurrentImageVersion(client)
+    image = image.format(currentVersion)
     # Build Image
-    if len(client.images.list(image)) == 0:
+    if len(client.images.list(image)) == 0 and currentVersion != '':
         logging.info('Build CUDA Cores Image')
         client.images.build(path='.',  tag=image, dockerfile='Dockerfile.gpu')
 
@@ -268,8 +290,6 @@ def readRuntimeFiles(path):
 def cuda_cores(nvDevices, gpus):
     
     devices, libs = buildCudaCoreDockerCLI(nvDevices)
-    print(nvDevices)
-    print(devices)
     output = cudaCores(image, devices, libs, gpus)
     if output != '':
         information = cudaInformation(output)
@@ -377,6 +397,4 @@ if __name__ == "__main__":
 
     #     e.wait(timeout=90)
 
-    print(nvidiaDevice(os.listdir('/dev/')))
-    print(checkCudaInstalation(getDeviceType()))
     print(flow(RUNTIME_PATH, HOST_FILES))
