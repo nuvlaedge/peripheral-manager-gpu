@@ -26,7 +26,7 @@ import subprocess
 
 identifier = 'GPU'
 # image = 'franciscomendonca/cuda-core:1.0'
-image = 'cuda-cores'
+image = 'cuda'
 
 def init_logger():
     """ Initializes logging """
@@ -170,6 +170,10 @@ def cudaCores(image, devices, volumes, gpus):
     """
 
     client = docker.from_env()
+
+    # Build Image
+    client.images.build(path='.',  tag=image, dockerfile='Dockerfile.gpu')
+
     try:
         container = client.containers.run(image, devices=devices, volumes=volumes)
         return str(container)
