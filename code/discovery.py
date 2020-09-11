@@ -129,58 +129,52 @@ def buildCudaCoreDockerCLI(devices):
     cli_devices = []
     cli_volumes = {}
 
-    non_devices = ['/dev/nvhost-nvdec1', 
-                   '/dev/nvhost-nvenc1', 
-                   '/dev/nvhost-ctrl-nvdla0', 
-                   '/dev/nvhost-ctrl-nvdla1', 
-                   '/dev/nvhost-nvdla0',
-                   '/dev/nvhost-nvdla1'
-                   ]
+    # non_devices = ['/dev/nvhost-nvdec1', 
+    #                '/dev/nvhost-nvenc1', 
+    #                '/dev/nvhost-ctrl-nvdla0', 
+    #                '/dev/nvhost-ctrl-nvdla1', 
+    #                '/dev/nvhost-nvdla0',
+    #                '/dev/nvhost-nvdla1'
+    #                ]
     
     current_devices = ['/dev/{}'.format(i) for i in os.listdir('/dev/')]
 
     for device in devices:
-        if device not in non_devices and device in current_devices:
+        
+        if device in current_devices:
             cli_devices.append('{0}:{0}:rwm'.format(device))
     
     version = getDeviceType()
     
-    libcuda = '/usr/lib/{0}-linux-gnu/'.format(version)
+    # Due to differences in the implementation of the GPUs by Nvidia, in the Jetson devices, and
+    #   in the discrete graphics, there is a need for different volumes. 
+
+    if version == 'aarch64':
+        libcuda = '/usr/lib/{0}-linux-gnu/'.format(version)
+        etc = '/etc/'
+        cli_volumes[etc] = {'bind':  etc, 'mode': 'ro'}
+    else:
+        libcuda = '/usr/lib/{0}-linux-gnu/libcuda.so'.format(version)
+
     cuda = '/usr/local/cuda'
-    etc = '/etc/'
 
     cli_volumes[libcuda] = {'bind': libcuda, 'mode': 'ro'}
     cli_volumes[cuda] = {'bind': cuda, 'mode': 'ro'}
-    cli_volumes[etc] = {'bind':  etc, 'mode': 'ro'}
-
 
     return cli_devices, cli_volumes
-
-
-def buildDockerCLI(devices, libs):
-    """
-    DEPRECEATED
-
-    Creates Docker CLI string to be used on a system call.
-    """
-    run = 'docker run '
-    
-    for i in devices:
-        run += '--devices {} '.format(i)
-    
-    for i in libs:
-        run += '-v {}:{}'.format(i, i)
-
-    return run
 
 
 def cudaCores(image, devices, volumes, gpus):
     """
     Starts Cuda Core container and returns the output from the container
     """
+
     client = docker.from_env()
-    container = client.containers.run(image, devices=devices, volumes=volumes)
-    return str(container)
+    try:
+        container = client.containers.run(image, devices=devices, volumes=volumes)
+        return str(container)
+    except:
+        return ''
 
 
 def cudaInformation(output):
@@ -273,11 +267,16 @@ def readRuntimeFiles(path):
 
 
 def cuda_cores(nvDevices, gpus):
-
+    
     devices, libs = buildCudaCoreDockerCLI(nvDevices)
+    print(nvDevices)
+    print(devices)
     output = cudaCores(image, devices, libs, gpus)
-    information = cudaInformation(output)
-    return information
+    if output != '':
+        information = cudaInformation(output)
+        return information
+    else:
+        return []
 
 
 def flow(runtime, hostFilesPath):
@@ -314,9 +313,8 @@ def flow(runtime, hostFilesPath):
         # A GPU is present, and ready to be used, but not with --gpus
         nvDevices = nvidiaDevice(os.listdir('/dev/'))
         devices, libs = buildCudaCoreDockerCLI(nvDevices)
-        output = cudaCores(image, devices, libs, False)
-        information = cudaInformation(output)
-
+        
+        information = cuda_cores(nvDevices, False)
 
         runtime = {'device-information': information, 'devices': devices, 'libraries': libs}
 
