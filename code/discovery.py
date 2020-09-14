@@ -186,6 +186,7 @@ def cudaCores(image, devices, volumes, gpus):
 
     currentVersion = getCurrentImageVersion(client)
     image = image.format(currentVersion)
+    
     # Build Image
     if len(client.images.list(image)) == 0 and currentVersion != '':
         logging.info('Build CUDA Cores Image')
@@ -287,7 +288,7 @@ def readRuntimeFiles(path):
     return None
 
 
-def cuda_cores(nvDevices, gpus):
+def cudaCoresInformation(nvDevices, gpus):
     
     devices, libs = buildCudaCoreDockerCLI(nvDevices)
     output = cudaCores(image, devices, libs, gpus)
@@ -320,7 +321,7 @@ def flow(runtime, hostFilesPath):
         else:
             logging.info('--gpus is not available in Docker, but GPU usage is available')
         
-        runtime['device-information'] = cuda_cores(runtime['devices'], True)
+        runtime['device-information'] = cudaCoresInformation(runtime['devices'], True)
 
         runtimeFiles['additional-assets'] = runtime
 
@@ -333,7 +334,7 @@ def flow(runtime, hostFilesPath):
         nvDevices = nvidiaDevice(os.listdir('/dev/'))
         devices, libs = buildCudaCoreDockerCLI(nvDevices)
         
-        information = cuda_cores(nvDevices, False)
+        information = cudaCoresInformation(nvDevices, False)
 
         runtime = {'device-information': information, 'devices': devices, 'libraries': libs}
 
@@ -379,22 +380,21 @@ if __name__ == "__main__":
 
     API_BASE_URL = "http://agent/api"
 
-    # wait_bootstrap()
+    wait_bootstrap()
 
     API_URL = API_BASE_URL + "/peripheral"
     HOST_FILES = '/etc/nvidia-container-runtime/host-files-for-container.d/'
     RUNTIME_PATH = '/etc/docker/'
 
-    # e = Event()
+    e = Event()
 
-    # while True:
-    #     gpu_peripheral = flow(RUNTIME_PATH, HOST_FILES)
-    #     if gpu_peripheral:
-    #         peripheral_already_registered = gpuCheck(API_URL)
+    while True:
+        gpu_peripheral = flow(RUNTIME_PATH, HOST_FILES)
+        if gpu_peripheral:
+            peripheral_already_registered = gpuCheck(API_URL)
 
-    #         if not peripheral_already_registered:
-    #             send(API_URL, gpu_peripheral)
+            if not peripheral_already_registered:
+                send(API_URL, gpu_peripheral)
 
-    #     e.wait(timeout=90)
+        e.wait(timeout=90)
 
-    print(flow(RUNTIME_PATH, HOST_FILES))
