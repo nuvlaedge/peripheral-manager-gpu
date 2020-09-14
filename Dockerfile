@@ -1,6 +1,6 @@
 FROM python:3-alpine
 
-RUN apk add --no-cache docker
+RUN apk add --no-cache docker=19.03.12-r0
 
 RUN rm -rf /var/cache/apk/*
 
