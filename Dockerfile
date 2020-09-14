@@ -8,6 +8,6 @@ COPY code/ /opt/nuvlabox/
 
 WORKDIR /opt/nuvlabox/
 
-RUN pip3 install -r ./requirements.txt
+RUN pip3 install -r requirements.txt
 
-# ENTRYPOINT ["./discovery.py"]
+ENTRYPOINT ["./discovery.py"]
