@@ -321,7 +321,7 @@ def flow(runtime, hostFilesPath):
         else:
             logging.info('--gpus is not available in Docker, but GPU usage is available')
         
-        runtime['device-information'] = cudaCoresInformation(runtime['devices'], True)
+        runtime['additional-assets'] = {'device-information': cudaCoresInformation(runtime['devices'], True)}
 
         runtimeFiles['additional-assets'] = runtime
 
