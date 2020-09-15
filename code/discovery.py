@@ -130,6 +130,7 @@ def buildCudaCoreDockerCLI(devices):
     """
     cli_devices = []
     cli_volumes = {}
+    libs = []
 
     current_devices = ['/dev/{}'.format(i) for i in os.listdir('/dev/')]
 
@@ -147,15 +148,16 @@ def buildCudaCoreDockerCLI(devices):
         libcuda = '/usr/lib/{0}-linux-gnu/'.format(version)
         etc = '/etc/'
         cli_volumes[etc] = {'bind':  etc, 'mode': 'ro'}
+        libs.extend([libcuda, etc])
     else:
         libcuda = '/usr/lib/{0}-linux-gnu/libcuda.so'.format(version)
-
+        libs.extend([libcuda])
     cuda = '/usr/local/cuda'
-
+    libs.extend(cuda)
     cli_volumes[libcuda] = {'bind': libcuda, 'mode': 'ro'}
     cli_volumes[cuda] = {'bind': cuda, 'mode': 'ro'}
 
-    return cli_devices, cli_volumes
+    return cli_devices, cli_volumes, libs
 
 
 def getCurrentImageVersion(client):
@@ -290,7 +292,7 @@ def readRuntimeFiles(path):
 
 def cudaCoresInformation(nvDevices, gpus):
     
-    devices, libs = buildCudaCoreDockerCLI(nvDevices)
+    devices, libs, _ = buildCudaCoreDockerCLI(nvDevices)
     output = cudaCores(image, devices, libs, gpus)
     if output != '':
         information = cudaInformation(output)
@@ -332,11 +334,11 @@ def flow(runtime, hostFilesPath):
 
         # A GPU is present, and ready to be used, but not with --gpus
         nvDevices = nvidiaDevice(os.listdir('/dev/'))
-        devices, libs = buildCudaCoreDockerCLI(nvDevices)
+        _, _, formatedLibs = buildCudaCoreDockerCLI(nvDevices)
         
         information = cudaCoresInformation(nvDevices, False)
 
-        runtime = {'device-information': information, 'devices': devices, 'libraries': libs}
+        runtime = {'device-information': information, 'devices': nvDevices, 'libraries': formatedLibs}
 
         runtimeFiles['additional-assets'] = runtime
         logging.info(runtimeFiles)
@@ -368,10 +370,10 @@ def gpuCheck(api_url):
 
     if not get_gpus.ok or not isinstance(get_gpus.json(), list) or len(get_gpus.json()) == 0:
         logging.info('No GPU published.')
-        return False
+        return True
     
     logging.info('GPU has already been published.')
-    return True
+    return False
 
 
 if __name__ == "__main__":
@@ -389,12 +391,13 @@ if __name__ == "__main__":
     e = Event()
 
     while True:
+
         gpu_peripheral = flow(RUNTIME_PATH, HOST_FILES)
+
         if gpu_peripheral:
             peripheral_already_registered = gpuCheck(API_URL)
 
-            if not peripheral_already_registered:
+            if peripheral_already_registered:
                 send(API_URL, gpu_peripheral)
 
         e.wait(timeout=90)
-
