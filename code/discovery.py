@@ -212,9 +212,8 @@ def cudaInformation(output):
     device_information['device-name'] = info[1]
     device_information['multiprocessors'] = info[3]
     device_information['cuda-cores'] = info[4]
-    device_information['concurrent-threads'] = info[5]
-    device_information['gpu-clock'] = info[6]
-    device_information['memory-clock'] = info[7]
+    # device_information['gpu-clock'] = info[6]
+    # device_information['memory-clock'] = info[7]
     device_information['memory'] = info[8]
 
     return device_information
