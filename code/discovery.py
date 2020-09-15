@@ -28,7 +28,7 @@ from packaging import version
 
 identifier = 'GPU'
 # image = 'franciscomendonca/cuda-core:1.0'
-image = 'nuvlabox_cuda_core_information/{}'
+image = 'nuvlabox_cuda_core_information:{}'
 
 def init_logger():
     """ Initializes logging """
@@ -153,7 +153,8 @@ def buildCudaCoreDockerCLI(devices):
         libcuda = '/usr/lib/{0}-linux-gnu/libcuda.so'.format(version)
         libs.extend([libcuda])
     cuda = '/usr/local/cuda'
-    libs.extend(cuda)
+
+    libs.extend([cuda])
     cli_volumes[libcuda] = {'bind': libcuda, 'mode': 'ro'}
     cli_volumes[cuda] = {'bind': cuda, 'mode': 'ro'}
 
@@ -161,6 +162,7 @@ def buildCudaCoreDockerCLI(devices):
 
 
 def getCurrentImageVersion(client):
+
     peripheralVersion = ''
     cudaCoreVersion = ''
     
@@ -175,7 +177,7 @@ def getCurrentImageVersion(client):
         return peripheralVersion
 
     else:
-        return ''
+        return '0.0.1'
      
 
 
@@ -187,15 +189,15 @@ def cudaCores(image, devices, volumes, gpus):
     client = docker.from_env()
 
     currentVersion = getCurrentImageVersion(client)
-    image = image.format(currentVersion)
-    
+    img = image.format(currentVersion)
+
     # Build Image
-    if len(client.images.list(image)) == 0 and currentVersion != '':
+    if len(client.images.list(img)) == 0 and currentVersion != '':
         logging.info('Build CUDA Cores Image')
-        client.images.build(path='.',  tag=image, dockerfile='Dockerfile.gpu')
+        client.images.build(path='.', tag=img, dockerfile='Dockerfile.gpu')
 
     try:
-        container = client.containers.run(image, devices=devices, volumes=volumes)
+        container = client.containers.run(img, devices=devices, volumes=volumes)
         return str(container)
     except:
         return ''
