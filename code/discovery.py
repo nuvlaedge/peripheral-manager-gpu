@@ -324,7 +324,7 @@ def flow(runtime, hostFilesPath):
         else:
             logging.info('--gpus is not available in Docker, but GPU usage is available')
         
-        runtime['additional-assets'] = {'device-information': cudaCoresInformation(runtime['devices'], True)}
+        # runtime['additional-assets'] = {'device-information': cudaCoresInformation(runtime['devices'], True)}
 
         runtimeFiles['additional-assets'] = runtime
 
@@ -337,9 +337,10 @@ def flow(runtime, hostFilesPath):
         nvDevices = nvidiaDevice(os.listdir('/dev/'))
         _, _, formatedLibs = buildCudaCoreDockerCLI(nvDevices)
         
-        information = cudaCoresInformation(nvDevices, False)
+        # information = cudaCoresInformation(nvDevices, False)
 
-        runtime = {'device-information': information, 'devices': nvDevices, 'libraries': formatedLibs}
+        # runtime = {'device-information': information, 'devices': nvDevices, 'libraries': formatedLibs}
+        runtime = {'devices': nvDevices, 'libraries': formatedLibs}
 
         runtimeFiles['additional-assets'] = runtime
         logging.info(runtimeFiles)
