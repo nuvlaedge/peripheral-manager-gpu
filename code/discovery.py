@@ -209,14 +209,14 @@ def cudaInformation(output):
     """
     device_information = {}
     info = [i.split(":")[1] for i in output.split('\\n')[1:-1]]
-    device_information['device-name'] = info[1]
+    # device_information['device-name'] = info[1]
     device_information['multiprocessors'] = info[3]
     device_information['cuda-cores'] = info[4]
     # device_information['gpu-clock'] = info[6]
     # device_information['memory-clock'] = info[7]
     device_information['memory'] = info[8]
 
-    return device_information
+    return info[1], device_information
 
 
 def dockerVersion():
@@ -296,8 +296,8 @@ def cudaCoresInformation(nvDevices, gpus):
     devices, libs, _ = buildCudaCoreDockerCLI(nvDevices)
     output = cudaCores(image, devices, libs, gpus)
     if output != '':
-        information = cudaInformation(output)
-        return information
+        name, information = cudaInformation(output)
+        return name, information
     else:
         return []
 
@@ -323,9 +323,10 @@ def flow(runtime, hostFilesPath):
 
         else:
             logging.info('--gpus is not available in Docker, but GPU usage is available')
-        
-        # runtime['additional-assets'] = {'device-information': cudaCoresInformation(runtime['devices'], True)}
+        name, info = cudaCoresInformation(runtime['devices'], True)
+        runtime['additional-assets'] = {'device-information': info}
 
+        runtimeFiles['name'] = name
         runtimeFiles['additional-assets'] = runtime
 
         logging.info(runtimeFiles)
@@ -337,11 +338,11 @@ def flow(runtime, hostFilesPath):
         nvDevices = nvidiaDevice(os.listdir('/dev/'))
         _, _, formatedLibs = buildCudaCoreDockerCLI(nvDevices)
         
-        # information = cudaCoresInformation(nvDevices, False)
+        name, info = cudaCoresInformation(runtime['devices'], True)
 
-        # runtime = {'device-information': information, 'devices': nvDevices, 'libraries': formatedLibs}
-        runtime = {'devices': nvDevices, 'libraries': formatedLibs}
+        runtime = {'device-information': info, 'devices': nvDevices, 'libraries': formatedLibs}
 
+        runtimeFiles['name'] = name
         runtimeFiles['additional-assets'] = runtime
         logging.info(runtimeFiles)
         return runtimeFiles
