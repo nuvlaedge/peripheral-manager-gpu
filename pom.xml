@@ -6,7 +6,7 @@
     <groupId>sixsq.nuvlabox.peripheral-manager-gpu</groupId>
     <artifactId>peripheral-manager-gpu</artifactId>
     <packaging>pom</packaging>
-    <version>0.0.2-SNAPSHOT</version>
+    <version>0.0.2</version>
     <name>peripheral-manager-gpu</name>
     <url>http://sixsq.com/</url>
 
