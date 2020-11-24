@@ -22,25 +22,11 @@ import docker
 import logging
 from threading import Event
 import time
-import subprocess
 from packaging import version
 
 
 identifier = 'GPU'
-# image = 'franciscomendonca/cuda-core:1.0'
 image = 'nuvlabox_cuda_core_information:{}'
-
-def init_logger():
-    """ Initializes logging """
-
-    root = logging.getLogger()
-    root.setLevel(logging.DEBUG)
-
-    handler = logging.StreamHandler(sys.stdout)
-    handler.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(levelname)s - %(funcName)s - %(message)s')
-    handler.setFormatter(formatter)
-    root.addHandler(handler)
 
 
 def wait_bootstrap(healthcheck_endpoint="http://agent/api/healthcheck"):
@@ -207,14 +193,14 @@ def cudaInformation(output):
     """
     Gets the output from the container and returns GPU information
     """
-    device_information = {}
+    device_information = []
     info = [i.split(":")[1] for i in output.split('\\n')[1:-1]]
     # device_information['device-name'] = info[1]
-    device_information['multiprocessors'] = info[3]
-    device_information['cuda-cores'] = info[4]
+    device_information.append({'unit': 'multiprocessors', 'capacity': int(info[3])})
+    device_information.append({'unit': 'cuda-cores', 'capacity': int(info[4])})
     # device_information['gpu-clock'] = info[6]
     # device_information['memory-clock'] = info[7]
-    device_information['memory'] = info[8]
+    device_information.append({'unit': int(info[8].split()[-1]), 'capacity': int(info[8].split()[0])})
 
     return info[1], device_information
 
@@ -311,6 +297,7 @@ def flow(runtime, hostFilesPath):
         'vendor': 'Nvidia',
         'classes': ['gpu'],
         'identifier': identifier,
+        'interface': 'gpu',
         'additional-assets': runtime
     }
 
@@ -324,10 +311,9 @@ def flow(runtime, hostFilesPath):
         else:
             logging.info('--gpus is not available in Docker, but GPU usage is available')
         name, info = cudaCoresInformation(runtime['devices'], True)
-        runtime['additional-assets'] = {'device-information': info}
 
         runtimeFiles['name'] = name
-        runtimeFiles['additional-assets'] = runtime
+        runtimeFiles['resources'] = info
 
         logging.info(runtimeFiles)
         return runtimeFiles
@@ -340,10 +326,11 @@ def flow(runtime, hostFilesPath):
         
         name, info = cudaCoresInformation(runtime['devices'], True)
 
-        runtime = {'device-information': info, 'devices': nvDevices, 'libraries': formatedLibs}
+        runtime = {'devices': nvDevices, 'libraries': formatedLibs}
 
         runtimeFiles['name'] = name
         runtimeFiles['additional-assets'] = runtime
+        runtimeFiles['resources'] = info
         logging.info(runtimeFiles)
         return runtimeFiles
 
@@ -380,8 +367,6 @@ def gpuCheck(api_url):
 
 
 if __name__ == "__main__":
-
-    init_logger()
 
     API_BASE_URL = "http://agent/api"
 
