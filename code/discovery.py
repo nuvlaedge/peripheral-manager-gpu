@@ -25,6 +25,7 @@ import time
 from packaging import version
 
 
+logging.basicConfig(level=logging.INFO)
 identifier = 'GPU'
 image = 'nuvlabox_cuda_core_information:{}'
 
