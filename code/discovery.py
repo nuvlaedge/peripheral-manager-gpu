@@ -196,11 +196,11 @@ def cudaInformation(output):
     device_information = []
     info = [i.split(":")[1] for i in output.split('\\n')[1:-1]]
     # device_information['device-name'] = info[1]
-    device_information.append({'unit': 'multiprocessors', 'capacity': int(info[3])})
-    device_information.append({'unit': 'cuda-cores', 'capacity': int(info[4])})
+    device_information.append({'unit': 'multiprocessors', 'capacity': info[3]})
+    device_information.append({'unit': 'cuda-cores', 'capacity': info[4]})
     # device_information['gpu-clock'] = info[6]
     # device_information['memory-clock'] = info[7]
-    device_information.append({'unit': info[8].split()[-1], 'capacity': int(info[8].split()[0])})
+    device_information.append({'unit': info[8].split()[-1], 'capacity': info[8].split()[0]})
 
     return info[1], device_information
 
