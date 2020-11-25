@@ -4,4 +4,5 @@ RUN apt update && apt install -y python3
 
 COPY check-cuda.py /
 
+CMD ["python3", "check-cuda.py"]
 
