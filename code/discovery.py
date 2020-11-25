@@ -183,11 +183,24 @@ def cudaCores(image, devices, volumes, gpus):
         logging.info('Build CUDA Cores Image')
         client.images.build(path='.', tag=img, dockerfile='Dockerfile.gpu')
 
+    container_name = 'get-cuda-cores'
+    container = ''
     try:
-        container = client.containers.run(img, devices=devices, volumes=volumes, auto_remove=True)
-        return str(container)
-    except:
-        return ''
+        container = client.containers.run(img,
+                                          name=container_name,
+                                          devices=devices,
+                                          volumes=volumes,
+                                          remove=True)
+    except docker.errors.APIError as e:
+        if '409' in str(e):
+            client.api.remove_container(container_name)
+            container = client.containers.run(img,
+                                              name=container_name,
+                                              devices=devices,
+                                              volumes=volumes,
+                                              remove=True)
+
+    return str(container)
 
 
 def cudaInformation(output):
