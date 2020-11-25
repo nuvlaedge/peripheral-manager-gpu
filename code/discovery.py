@@ -184,7 +184,7 @@ def cudaCores(image, devices, volumes, gpus):
         client.images.build(path='.', tag=img, dockerfile='Dockerfile.gpu')
 
     try:
-        container = client.containers.run(img, devices=devices, volumes=volumes, remove=True)
+        container = client.containers.run(img, devices=devices, volumes=volumes, auto_remove=True)
         return str(container)
     except:
         return ''
