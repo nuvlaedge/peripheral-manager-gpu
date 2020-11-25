@@ -184,7 +184,7 @@ def cudaCores(image, devices, volumes, gpus):
         client.images.build(path='.', tag=img, dockerfile='Dockerfile.gpu')
 
     try:
-        container = client.containers.run(img, devices=devices, volumes=volumes)
+        container = client.containers.run(img, devices=devices, volumes=volumes, remove=True)
         return str(container)
     except:
         return ''
@@ -283,10 +283,13 @@ def cudaCoresInformation(nvDevices, gpus):
     devices, libs, _ = buildCudaCoreDockerCLI(nvDevices)
     output = cudaCores(image, devices, libs, gpus)
     if output != '':
-        name, information = cudaInformation(output)
-        return name, information
-    else:
-        return []
+        try:
+            name, information = cudaInformation(output)
+            return name, information
+        except:
+            pass
+
+    return []
 
 
 def flow(runtime, hostFilesPath):
