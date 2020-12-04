@@ -37,11 +37,16 @@ def wait_bootstrap(healthcheck_endpoint="http://agent/api/healthcheck"):
 
     logging.info("Checking if NuvlaBox has been initialized...")
 
-    r = requests.get(healthcheck_endpoint)
-    
-    while not r.ok:
-        time.sleep(5)
-        r = requests.get(healthcheck_endpoint)
+    while True:
+        try:
+            r = requests.get(healthcheck_endpoint)
+        except requests.exceptions.ConnectionError as e:
+            logging.warning(f'Unable to establish connection with NuvlaBox Agent: {e}. Will keep trying...')
+            time.sleep(10)
+            continue
+
+        if r.ok:
+            break
 
     logging.info('NuvlaBox has been initialized.')
     return
