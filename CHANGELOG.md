@@ -1,4 +1,8 @@
 # Changelog
+## [0.1.1] - 2020-12-04
+        ### Added
+        ### Changed
+                  - fix initial wait for NB bootstrap
 ## [0.1.0] - 2020-11-25
         ### Added 
                   - get cuda cores 
