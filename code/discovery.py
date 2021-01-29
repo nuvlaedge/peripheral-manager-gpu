@@ -204,6 +204,11 @@ def cudaCores(image, devices, volumes, gpus):
                                               devices=devices,
                                               volumes=volumes,
                                               remove=True)
+        else:
+            pass
+    except Exception as e:
+        logging.error(f'Unable to infer CUDA cores. Reason: {str(e)}')
+        pass    # let's not stop the peripheral manager just because we can't get this property
 
     return str(container)
 
