@@ -139,7 +139,7 @@ def buildCudaCoreDockerCLI(devices):
     if version == 'aarch64':
         libcuda = '/usr/lib/{0}-linux-gnu/'.format(version)
         etc = '/etcfs/'
-        cli_volumes[etc] = {'bind':  etc, 'mode': 'ro'}
+        cli_volumes["/etc/"] = {'bind':  etc, 'mode': 'ro'}
         libs.extend([libcuda, etc])
     else:
         libcuda = '/usr/lib/{0}-linux-gnu/libcuda.so'.format(version)
