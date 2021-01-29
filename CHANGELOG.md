@@ -1,4 +1,9 @@
 # Changelog
+## [0.2.0] - 2021-01-29
+### Added 
+ - tolerance to failures when retrieving cuda cores
+### Changed
+ - fix /etc bind mount
 ## [0.1.1] - 2020-12-04
         ### Added
         ### Changed
