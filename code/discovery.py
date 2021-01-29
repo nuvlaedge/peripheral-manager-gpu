@@ -138,7 +138,7 @@ def buildCudaCoreDockerCLI(devices):
 
     if version == 'aarch64':
         libcuda = '/usr/lib/{0}-linux-gnu/'.format(version)
-        etc = '/etc/'
+        etc = '/etcfs/'
         cli_volumes[etc] = {'bind':  etc, 'mode': 'ro'}
         libs.extend([libcuda, etc])
     else:
@@ -395,8 +395,8 @@ if __name__ == "__main__":
     wait_bootstrap()
 
     API_URL = API_BASE_URL + "/peripheral"
-    HOST_FILES = '/etc/nvidia-container-runtime/host-files-for-container.d/'
-    RUNTIME_PATH = '/etc/docker/'
+    HOST_FILES = '/etcfs/nvidia-container-runtime/host-files-for-container.d/'
+    RUNTIME_PATH = '/etcfs/docker/'
 
     e = Event()
 
