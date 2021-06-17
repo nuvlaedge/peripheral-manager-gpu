@@ -310,9 +310,9 @@ def cudaCoresInformation(nvDevices, gpus):
             name, information = cudaInformation(output)
             return name, information
         except:
-            pass
+            logging.exception('Exception in cudaCoresInformation')
 
-    return []
+    return None, None
 
 
 def flow(runtime, hostFilesPath):
