@@ -350,10 +350,10 @@ def flow(runtime, hostFilesPath):
         # A GPU is present, and ready to be used, but not with --gpus
         nvDevices = nvidiaDevice(os.listdir('/dev/'))
         _, _, formatedLibs = buildCudaCoreDockerCLI(nvDevices)
-        
-        name, info = cudaCoresInformation(runtime['devices'], True)
 
         runtime = {'devices': nvDevices, 'libraries': formatedLibs}
+
+        name, info = cudaCoresInformation(runtime['devices'], True)
 
         runtimeFiles['name'] = name
         runtimeFiles['additional-assets'] = runtime
