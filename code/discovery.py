@@ -159,7 +159,10 @@ def getCurrentImageVersion(client):
     cudaCoreVersion = ''
     
     for container in client.containers.list():
-        img, tag = container.image.attrs['RepoTags'][0].split(':')
+        repotags = container.image.attrs.get('RepoTags')
+        if not repotags:
+            continue
+        img, tag = repotags[0].split(':')
         if img == 'nuvlabox/peripheral-manager-gpu':
             peripheralVersion = tag
         elif img == image:
