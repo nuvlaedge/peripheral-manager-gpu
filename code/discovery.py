@@ -312,8 +312,8 @@ def cudaCoresInformation(nvDevices, gpus):
         try:
             name, information = cudaInformation(output)
             return name, information
-        except:
-            logging.exception('Exception in cudaCoresInformation')
+        except Exception as e:
+            logging.error(f'Exception in cudaCoresInformation. Reason: {str(e)}')
 
     return None, None
 
