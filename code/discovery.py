@@ -159,7 +159,10 @@ def getCurrentImageVersion(client):
     cudaCoreVersion = ''
     
     for container in client.containers.list():
-        img, tag = container.image.attrs['RepoTags'][0].split(':')
+        repotags = container.image.attrs.get('RepoTags')
+        if not repotags:
+            continue
+        img, tag = repotags[0].split(':')
         if img == 'nuvlabox/peripheral-manager-gpu':
             peripheralVersion = tag
         elif img == image:
@@ -309,10 +312,10 @@ def cudaCoresInformation(nvDevices, gpus):
         try:
             name, information = cudaInformation(output)
             return name, information
-        except:
-            pass
+        except Exception as e:
+            logging.error(f'Exception in cudaCoresInformation. Reason: {str(e)}')
 
-    return []
+    return None, None
 
 
 def flow(runtime, hostFilesPath):
@@ -350,10 +353,10 @@ def flow(runtime, hostFilesPath):
         # A GPU is present, and ready to be used, but not with --gpus
         nvDevices = nvidiaDevice(os.listdir('/dev/'))
         _, _, formatedLibs = buildCudaCoreDockerCLI(nvDevices)
-        
-        name, info = cudaCoresInformation(runtime['devices'], True)
 
         runtime = {'devices': nvDevices, 'libraries': formatedLibs}
+
+        name, info = cudaCoresInformation(runtime['devices'], True)
 
         runtimeFiles['name'] = name
         runtimeFiles['additional-assets'] = runtime
