@@ -1,4 +1,10 @@
 # Changelog
+## [0.2.1] - 2021-06-25
+### Added 
+ - missing "six" dependency of docker-py
+### Changed
+ - fix issue with containers without tags
+ - fix an issue in flow() function
 ## [0.2.0] - 2021-01-29
 ### Added 
  - tolerance to failures when retrieving cuda cores
