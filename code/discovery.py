@@ -14,15 +14,24 @@ It provides:
 
 import os
 import csv
-import sys
 import json
 from shutil import which
 import requests
-import docker
 import logging
 from threading import Event
 import time
 from packaging import version
+
+docker_socket_file = '/var/run/docker.sock'
+KUBERNETES_SERVICE_HOST = os.getenv('KUBERNETES_SERVICE_HOST')
+if KUBERNETES_SERVICE_HOST:
+    ORCHESTRATOR = 'kubernetes'
+else:
+    if os.path.exists(docker_socket_file):
+        import docker
+        ORCHESTRATOR = 'docker'
+    else:
+        ORCHESTRATOR = None
 
 
 logging.basicConfig(level=logging.INFO)
@@ -175,7 +184,6 @@ def getCurrentImageVersion(client):
         return '0.0.1'
      
 
-
 def cudaCores(image, devices, volumes, gpus):
     """
     Starts Cuda Core container and returns the output from the container
@@ -237,14 +245,14 @@ def dockerVersion():
     Checks if the Docker Engine version and the Docker API version are enough to run --gpus.
     """
     version = docker.from_env().version()
-    
+
     for i in version['Components']:
-    
+
         if i['Name'] == 'Engine':
 
             engineVersion = int(i['Version'].split('.')[0])
             apiVersion = float(i['Details']['ApiVersion'])
-    
+
             if engineVersion >= 19 and apiVersion >= 1.4:
                 return True
 
@@ -335,15 +343,17 @@ def flow(runtime, hostFilesPath):
 
         # GPU is present and able to be used
 
-        if dockerVersion():
-            logging.info('--gpus is available in Docker...')
+        # If we are running on Docker, we might be able to fetch additional information about the CUDA cores
+        if ORCHESTRATOR == 'docker':
+            if dockerVersion():
+                logging.info('--gpus is available in Docker...')
 
-        else:
-            logging.info('--gpus is not available in Docker, but GPU usage is available')
-        name, info = cudaCoresInformation(runtime['devices'], True)
+            else:
+                logging.info('--gpus is not available in Docker, but GPU usage is available')
+            name, info = cudaCoresInformation(runtime['devices'], True)
 
-        runtimeFiles['name'] = name
-        runtimeFiles['resources'] = info
+            runtimeFiles['name'] = name
+            runtimeFiles['resources'] = info
 
         logging.info(runtimeFiles)
         return runtimeFiles
@@ -356,11 +366,15 @@ def flow(runtime, hostFilesPath):
 
         runtime = {'devices': nvDevices, 'libraries': formatedLibs}
 
-        name, info = cudaCoresInformation(runtime['devices'], True)
+        # only for Docker
+        if ORCHESTRATOR == 'docker':
+            name, info = cudaCoresInformation(runtime['devices'], True)
 
-        runtimeFiles['name'] = name
+            runtimeFiles['name'] = name
+            runtimeFiles['resources'] = info
+
         runtimeFiles['additional-assets'] = runtime
-        runtimeFiles['resources'] = info
+
         logging.info(runtimeFiles)
         return runtimeFiles
 
