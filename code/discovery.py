@@ -26,7 +26,9 @@ docker_socket_file = '/var/run/docker.sock'
 KUBERNETES_SERVICE_HOST = os.getenv('KUBERNETES_SERVICE_HOST')
 if KUBERNETES_SERVICE_HOST:
     ORCHESTRATOR = 'kubernetes'
+    agent_dns_name = f'agent.{os.getenv("MY_NAMESPACE", "nuvlabox")}'
 else:
+    agent_dns_name = 'agent'
     if os.path.exists(docker_socket_file):
         import docker
         ORCHESTRATOR = 'docker'
@@ -39,7 +41,7 @@ identifier = 'GPU'
 image = 'nuvlabox_cuda_core_information:{}'
 
 
-def wait_bootstrap(healthcheck_endpoint="http://agent/api/healthcheck"):
+def wait_bootstrap(healthcheck_endpoint=f"http://{agent_dns_name}/api/healthcheck"):
     """ Simply waits for the NuvlaBox to finish bootstrapping, by pinging the Agent API
     :returns
     """
@@ -412,7 +414,7 @@ def gpuCheck(api_url):
 
 if __name__ == "__main__":
 
-    API_BASE_URL = "http://agent/api"
+    API_BASE_URL = f"http://{agent_dns_name}/api"
 
     wait_bootstrap()
 
