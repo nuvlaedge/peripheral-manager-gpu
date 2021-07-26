@@ -1,4 +1,9 @@
 # Changelog
+## [1.0.0] - 2021-07-26
+### Added 
+ - add support for Kubernetes execution
+### Changed
+ - refactor code
 ## [0.2.1] - 2021-06-25
 ### Added 
  - missing "six" dependency of docker-py
