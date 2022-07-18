@@ -3,9 +3,7 @@
 ### Added
 ### Changed
  - Use common base image for all NE components
-## Unreleased
-### Changed
-- Downgraded from python 3.9 to 3.8 to synchronize all components
+ - Downgraded from python 3.9 to 3.8 to synchronize all components
 ## [1.0.1] - 2021-08-12
 ### Added
 ### Changed
