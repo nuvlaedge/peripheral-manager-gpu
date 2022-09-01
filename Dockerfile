@@ -17,14 +17,14 @@ LABEL org.opencontainers.image.authors="support@sixsq.com"
 LABEL org.opencontainers.image.created=${GIT_BUILD_TIME}
 LABEL org.opencontainers.image.url=${PROJECT_URL}
 LABEL org.opencontainers.image.vendor="SixSq SA"
-LABEL org.opencontainers.image.title="NuvlaBox Peripheral Manager GPU"
-LABEL org.opencontainers.image.description="Assesses whether the NuvlaBox is equipped with GPU"
+LABEL org.opencontainers.image.title="NuvlaEdge Peripheral Manager GPU"
+LABEL org.opencontainers.image.description="Assesses whether the NuvlaEdge is equipped with GPU"
 
 RUN rm -rf /var/cache/apk/*
 
-COPY code/ LICENSE /opt/nuvlabox/
+COPY code/ LICENSE /opt/nuvlaedge/
 
-WORKDIR /opt/nuvlabox/
+WORKDIR /opt/nuvlaedge/
 
 RUN pip3 install -r requirements.txt
 

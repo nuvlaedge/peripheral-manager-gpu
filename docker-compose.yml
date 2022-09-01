@@ -10,5 +10,5 @@ services:
       - /usr/lib/:/usr/lib/:ro
       - /dev/:/dev/:ro
     labels:
-      - nuvlabox.component=True
-      - nuvlabox.deployment=production
+      - nuvlaedge.component=True
+      - nuvlaedge.deployment=production

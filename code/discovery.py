@@ -2,9 +2,9 @@
 
 # -*- coding: utf-8 -*-
 
-"""NuvlaBox Peripheral GPU Manager
+"""NuvlaEdge Peripheral GPU Manager
 
-This service provides GPU discovery for the NuvlaBox.
+This service provides GPU discovery for the NuvlaEdge.
 
 It provides:
     - Nvidia Docker Runtime discovery
@@ -26,7 +26,7 @@ docker_socket_file = '/var/run/docker.sock'
 KUBERNETES_SERVICE_HOST = os.getenv('KUBERNETES_SERVICE_HOST')
 if KUBERNETES_SERVICE_HOST:
     ORCHESTRATOR = 'kubernetes'
-    agent_dns_name = f'agent.{os.getenv("MY_NAMESPACE", "nuvlabox")}'
+    agent_dns_name = f'agent.{os.getenv("MY_NAMESPACE", "nuvlaedge")}'
 else:
     agent_dns_name = 'agent'
     if os.path.exists(docker_socket_file):
@@ -38,28 +38,28 @@ else:
 
 logging.basicConfig(level=logging.INFO)
 identifier = 'GPU'
-image = 'nuvlabox_cuda_core_information:{}'
+image = 'nuvlaedge_cuda_core_information:{}'
 
 
 def wait_bootstrap(healthcheck_endpoint=f"http://{agent_dns_name}/api/healthcheck"):
-    """ Simply waits for the NuvlaBox to finish bootstrapping, by pinging the Agent API
+    """ Simply waits for the NuvlaEdge to finish bootstrapping, by pinging the Agent API
     :returns
     """
 
-    logging.info("Checking if NuvlaBox has been initialized...")
+    logging.info("Checking if NuvlaEdge has been initialized...")
 
     while True:
         try:
             r = requests.get(healthcheck_endpoint)
         except requests.exceptions.ConnectionError as e:
-            logging.warning(f'Unable to establish connection with NuvlaBox Agent: {e}. Will keep trying...')
+            logging.warning(f'Unable to establish connection with NuvlaEdge Agent: {e}. Will keep trying...')
             time.sleep(10)
             continue
 
         if r.ok:
             break
 
-    logging.info('NuvlaBox has been initialized.')
+    logging.info('NuvlaEdge has been initialized.')
     return
 
 
@@ -94,11 +94,11 @@ def checkCuda():
     Checks if CUDA is installed and returns the version.
     """
     version = which('nvcc')
-   
+
     if version is not None:
         with open(version + '/version.txt', 'r') as f:
             v = f.readline()
-    
+
             return v
     else:
         return False
@@ -113,7 +113,7 @@ def nvidiaDevice(devices):
     for device in devices:
         if device.startswith('nv'):
             nvDevices.append('/dev/{}'.format(device))
-    
+
     return nvDevices
 
 
@@ -138,14 +138,14 @@ def buildCudaCoreDockerCLI(devices):
     current_devices = ['/dev/{}'.format(i) for i in os.listdir('/dev/')]
 
     for device in devices:
-        
+
         if device in current_devices:
             cli_devices.append('{0}:{0}:rwm'.format(device))
-    
+
     version = getDeviceType()
-    
+
     # Due to differences in the implementation of the GPUs by Nvidia, in the Jetson devices, and
-    #   in the discrete graphics, there is a need for different volumes. 
+    #   in the discrete graphics, there is a need for different volumes.
 
     if version == 'aarch64':
         libcuda = '/usr/lib/{0}-linux-gnu/'.format(version)
@@ -168,13 +168,13 @@ def getCurrentImageVersion(client):
 
     peripheralVersion = ''
     cudaCoreVersion = ''
-    
+
     for container in client.containers.list():
         repotags = container.image.attrs.get('RepoTags')
         if not repotags:
             continue
         img, tag = repotags[0].split(':')
-        if img == 'nuvlabox/peripheral-manager-gpu':
+        if img == 'nuvlaedge/peripheral-manager-gpu':
             peripheralVersion = tag
         elif img == image:
             cudaCoreVersion = tag
@@ -184,7 +184,7 @@ def getCurrentImageVersion(client):
 
     else:
         return '0.0.1'
-     
+
 
 def cudaCores(image, devices, volumes, gpus):
     """
@@ -315,7 +315,7 @@ def readRuntimeFiles(path):
 
 
 def cudaCoresInformation(nvDevices, gpus):
-    
+
     devices, libs, _ = buildCudaCoreDockerCLI(nvDevices)
     output = cudaCores(image, devices, libs, gpus)
     if output != '':
@@ -401,13 +401,13 @@ def gpuCheck(api_url):
     logging.info('Checking if GPU already published')
 
     get_gpus = requests.get(api_url + '?identifier_pattern=' + identifier)
-    
+
     logging.info(get_gpus.json())
 
     if not get_gpus.ok or not isinstance(get_gpus.json(), list) or len(get_gpus.json()) == 0:
         logging.info('No GPU published.')
         return True
-    
+
     logging.info('GPU has already been published.')
     return False
 
