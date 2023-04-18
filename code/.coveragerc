@@ -1,0 +1,6 @@
+[run]
+relative_files = True
+include =
+  gpu/*
+  tests/*
+branch = True
