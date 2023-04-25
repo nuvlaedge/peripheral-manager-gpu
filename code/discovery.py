@@ -35,7 +35,7 @@ else:
         ORCHESTRATOR = None
 
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger: logging.Logger = logging.getLogger(__name__)
 
 identifier = 'GPU'
