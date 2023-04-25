@@ -144,14 +144,15 @@ def get_current_image_version(client):
         if not repo_tags:
             continue
         img, tag = repo_tags[0].split(':')
-        if img == 'nuvlaedge/peripheral-manager-gpu' or img == 'nuvladev/peripheral-manager-gpu':
+        if img == 'nuvlaedge/peripheral-manager-gpu':
             peripheral_version = tag
         elif img == image:
             cuda_core_version = tag
-
-    if version.parse(peripheral_version) > version.parse(cuda_core_version):
-        return peripheral_version
-
+    try:
+        if version.parse(peripheral_version) > version.parse(cuda_core_version):
+            return peripheral_version
+    except version.InvalidVersion:
+        pass
     else:
         return '0.0.1'
 
