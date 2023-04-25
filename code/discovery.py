@@ -326,7 +326,7 @@ def flow(**kwargs):
             runtime_files['resources'] = info
 
         logging.info(runtime_files)
-        return runtime_files
+        return {identifier: runtime_files}
 
     elif len(nvidia_device(os.listdir('/dev/'))) > 0 and check_cuda_installation(get_device_type()):
 
@@ -346,7 +346,7 @@ def flow(**kwargs):
         runtime_files['additional-assets'] = runtime
 
         logging.info(runtime_files)
-        return runtime_files
+        return {identifier: runtime_files}
 
     else:
 
